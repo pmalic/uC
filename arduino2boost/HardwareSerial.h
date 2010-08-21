@@ -19,6 +19,7 @@ class HardwareSerial
 private:
 	boost::asio::io_service m_io;
 	boost::asio::serial_port m_port;
+	std::string m_name;
 
 public:
 	/**
@@ -26,9 +27,19 @@ public:
 	 * \param port device name, example "/dev/ttyUSB0" or "COM4"
 	 * \throws boost::system::system_error if cannot open the serial device
 	 */
-	HardwareSerial (std::string name)
-	: m_io(), m_port(m_io, name)
+	HardwareSerial (const std::string& name)
+	: m_io(), m_port(m_io, name), m_name(name)
 	{
+	}
+
+	HardwareSerial (const HardwareSerial& serial)
+	: m_io(), m_port(m_io, serial.m_name), m_name(serial.m_name)
+	{
+	}
+
+	HardwareSerial& operator= (const HardwareSerial& serial)
+	{
+		return *this;
 	}
 
 	/**
@@ -92,7 +103,7 @@ public:
 	 * \param c string to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void write (std::string str)
+	void write (const std::string& str)
 	{
 		boost::asio::write(m_port, boost::asio::buffer(str, str.size()));
 	}
@@ -103,7 +114,7 @@ public:
 	 * \param len length of buffer
 	 * \throws boost::system::system_error on failure
 	 */
-	void write (void* buf, size_t len)
+	void write (const void* buf, size_t len)
 	{
 		boost::asio::write(m_port, boost::asio::buffer(buf, len));
 	}
@@ -113,16 +124,17 @@ public:
 	 * \param i int to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void print (int i, int format)
+	void print (int i, unsigned int format = 0)
 	{
 		std::ostringstream oss;
-		char c;
 
 		switch (format)
 		{
 			case BYTE:
-				c = static_cast<char> (i);
+			{
+				char c = static_cast<char> (i);
 				oss << c;
+			}
 				break;
 
 			case OCT:
@@ -132,6 +144,9 @@ public:
 			case HEX:
 				oss << std::hex << i;
 				break;
+
+			default:
+				oss << i;
 		}
 
 		const std::string& str = oss.str();
@@ -143,10 +158,9 @@ public:
 	 * \param c char to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void print (char c, int format)
+	void print (char c, unsigned int format = 0)
 	{
 		std::ostringstream oss;
-		int i;
 
 		switch (format)
 		{
@@ -155,14 +169,21 @@ public:
 				break;
 
 			case OCT:
-				i = static_cast<int> (c);
+			{
+				int i = static_cast<int> (c);
 				oss << std::oct << i;
+			}
 				break;
 
 			case HEX:
-				i = static_cast<int> (c);
+			{
+				int i = static_cast<int> (c);
 				oss << std::hex << i;
+			}
 				break;
+
+			default:
+				oss << c;
 		}
 
 		const std::string& str = oss.str();
@@ -174,7 +195,7 @@ public:
 	 * \param d double to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void print (double d, int decimals = 2)
+	void print (double d, unsigned int decimals = 2)
 	{
 		std::ostringstream oss;
 
@@ -186,26 +207,95 @@ public:
 
 	/**
 	 * Prints data to the serial port as human-readable ASCII text.
-	 * \param d double to write
+	 * \param str char* to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void print (char* str, int format)
+	void print (const char* str, unsigned int format = 0)
 	{
 		boost::asio::write(m_port, boost::asio::buffer(str, strlen(str)));
 	}
 
 	/**
 	 * Prints data to the serial port as human-readable ASCII text.
-	 * \param d double to write
+	 * \param str string to write
 	 * \throws boost::system::system_error on failure
 	 */
-	void print (std::string str, int format)
+	void print (const std::string& str, unsigned int format = 0)
 	{
 		boost::asio::write(m_port, boost::asio::buffer(str, str.size()));
 	}
 
-};
+	/**
+	 * Prints data to the serial port as human-readable ASCII text
+	 * followed by a carriage return character (ASCII 13, or '\r')
+	 * and a newline character (ASCII 10, or '\n').
+	 * \param i int to write
+	 * \throws boost::system::system_error on failure
+	 */
+	void println (int i, unsigned int format = 0)
+	{
+		print(i, format);
+		write('\r');
+		write('\n');
+	}
 
-HardwareSerial Serial("/dev/tty.usbserial-A700eX8n");
+	/**
+	 * Prints data to the serial port as human-readable ASCII text
+	 * followed by a carriage return character (ASCII 13, or '\r')
+	 * and a newline character (ASCII 10, or '\n').
+	 * \param c char to write
+	 * \throws boost::system::system_error on failure
+	 */
+	void println (char c, unsigned int format = 0)
+	{
+		print(c, format);
+		write('\r');
+		write('\n');
+	}
+
+	/**
+	 * Prints data to the serial port as human-readable ASCII text
+	 * followed by a carriage return character (ASCII 13, or '\r')
+	 * and a newline character (ASCII 10, or '\n').
+	 * \param d double to write
+	 * \throws boost::system::system_error on failure
+	 */
+	void println (double d, unsigned int decimals = 2)
+	{
+		print(d, decimals);
+		write('\r');
+		write('\n');
+	}
+
+	/**
+	 * Prints data to the serial port as human-readable ASCII text
+	 * followed by a carriage return character (ASCII 13, or '\r')
+	 * and a newline character (ASCII 10, or '\n').
+	 * \param str char* to write
+	 * \throws boost::system::system_error on failure
+	 */
+	void println (const char* str, unsigned int format = 0)
+	{
+		print(str, format);
+		write('\r');
+		write('\n');
+	}
+
+	/**
+	 * Prints data to the serial port as human-readable ASCII text
+	 * followed by a carriage return character (ASCII 13, or '\r')
+	 * and a newline character (ASCII 10, or '\n').
+	 * \param str string to write
+	 * \throws boost::system::system_error on failure
+	 */
+	void println (const std::string str, unsigned int format = 0)
+	{
+		print(str, format);
+		write('\r');
+		write('\n');
+	}
+
+
+};
 
 #endif /* HARDWARESERIAL_H_ */
