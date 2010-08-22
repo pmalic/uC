@@ -16,7 +16,7 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
-	XBee xbee = XBee(Platform::SerialPort("/dev/tty.usbserial-A700eX8n"));
+	XBee xbee = XBee(); //Platform::SerialPortConf("/dev/tty.usbserial-A700eX8n"));
 
 	uint8_t cmd[] = { argv[1][0], argv[1][1] };
 

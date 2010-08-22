@@ -655,8 +655,8 @@ void XBee::resetResponse() {
 	_response.reset();
 }
 
-XBee::XBee(Platform::SerialPort serialPort = Platform::SerialPort())
-: _response(XBeeResponse()), _serialPort(serialPort) {
+XBee::XBee(Platform::SerialPortConf portConf)
+: _response(XBeeResponse()), _serialPort(portConf) {
 	_pos = 0;
 	_escape = false;
 	_checksumTotal = 0;

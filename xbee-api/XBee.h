@@ -667,9 +667,9 @@ private:
  */
 class XBee {
 public:
-	XBee(Platform::SerialPort);
+	XBee(Platform::SerialPortConf portConf = Platform::SerialPortConf());
 	// for eclipse dev only
-//	void setSerial(Platform::SerialPort serialPort);
+//	void setSerial(Platform::SerialPortConf);
 	/**
 	 * Reads all available serial bytes until a packet is parsed, an error occurs, or the buffer is empty.
 	 * You may call <i>xbee</i>.getResponse().isAvailable() after calling this method to determine if

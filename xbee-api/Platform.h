@@ -17,11 +17,14 @@
  * along with XBee-Arduino.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined SERIAL
+#ifndef PLATFORM_H_
+#define PLATFORM_H_
+
+#if defined(SERIAL)
 	#include <inttypes.h>
 	#include <WProgram.h>
 	#include <HardwareSerial.h>
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 	#include <mbed.h>
 #else
 	#include <boost/asio.hpp>
@@ -35,9 +38,9 @@ public:
 	class Stopwatch
 	{
 	private:
-#if defined SERIAL
+#if defined(SERIAL)
 		unsigned long _start;
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 		Timer _timer;
 #else
 		boost::posix_time::ptime _start;
@@ -46,16 +49,16 @@ public:
 	public:
 		Stopwatch ()
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			_start = millis();
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			_timer.start();
 #else
 			_start = boost::posix_time::microsec_clock::universal_time();
 #endif
 		}
 
-#if defined MBED_LIBRARY_VERSION
+#if defined(__ARMCC_VERSION)
 		~Stopwatch ()
 		{
 			_timer.stop();
@@ -64,10 +67,10 @@ public:
 
 		unsigned long read ()
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			return millis() - _start;
-#elif defined MBED_LIBRARY_VERSION
-			return _timer.read_us();
+#elif defined(__ARMCC_VERSION)
+			return _timer.read_ms();
 #else
 		using namespace boost::posix_time;
 
@@ -78,62 +81,89 @@ public:
 		}
 	};
 
+	class SerialPortConf
+	{
+	public:
+#if defined(SERIAL)
+		const unsigned short number;
+
+		SerialPortConf (number = 0)
+		: number(number)
+		{
+		}
+#elif defined(__ARMCC_VERSION)
+		const PinName tx, rx;
+
+		SerialPortConf (const PinName& tx = p28, const PinName& rx = p27)
+		: tx(tx), rx(rx)
+		{
+		}
+#else
+		const std::string name;
+
+		SerialPortConf (const std::string& name = "/dev/tty.usbserial-A700eX8n")
+		: name(name)
+		{
+		}
+#endif
+	};
+
 	class SerialPort
 	{
 	private:
-#if defined SERIAL
+		SerialPortConf _conf;
+#if defined(SERIAL)
 		HardwareSerial _port;
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 		Serial _port;
 #else
 		boost::asio::io_service _io;
 		boost::asio::serial_port _port;
-		std::string _name;
 #endif
 
 	public:
-#if defined SERIAL
-		SerialPort (HardwareSerial port = Serial)
-		: _port(port)
+#if defined(SERIAL)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf), _port(Serial)
 		{
-		}
+			if (conf.number)
+				switch (conf.number)
+				{
+					case 1:
+						_port = Serial1;
+						break;
 
-		SerialPort (const SerialPort& serialPort)
-		: _port(serialPort._port)
-		{
-		}
-#elif defined MBED_LIBRARY_VERSION
-		SerialPort (PinName tx = p28, PinName rx = p27)
-		: _port(Serial(tx, rx))
-		{
-		}
+					case 2:
+						_port = Serial2;
+						break;
 
-		SerialPort (const SerialPort& serialPort)
-		: _port(serialPort._port)
-		{
+					case 3:
+						_port = Serial3;
+						break;
+				}
 		}
-
-		SerialPort (Serial port)
-		: _port(port)
+#elif defined(__ARMCC_VERSION)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf), _port(Serial(conf.tx, conf.rx))
 		{
 		}
 #else
-		SerialPort (const std::string& name = "COM3")
-		: _io(), _port(_io, name), _name(name)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf), _io(), _port(_io, conf.name)
 		{
 		}
 
 		SerialPort (const SerialPort& serialPort)
-		: _io(), _port(_io, serialPort._name), _name(serialPort._name)
+		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
 		{
 		}
 #endif
 
 		void begin (long speed)
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			_port.begin(speed);
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			_port.baud(speed);
 #else
 			_port.set_option(boost::asio::serial_port_base::baud_rate(speed));
@@ -142,9 +172,9 @@ public:
 
 		int readable ()
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			return _port.available();
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			return _port.readable();
 #else
 			return 1;
@@ -153,9 +183,9 @@ public:
 
 		int read ()
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			return _port.read();
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			return _port.getc();
 #else
 			char c;
@@ -168,9 +198,9 @@ public:
 
 		void flush ()
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			_port.flush();
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			while(_port.readable())
 				_port.getc();
 #else
@@ -180,12 +210,14 @@ public:
 
 		int write (int i)
 		{
-#if defined SERIAL
+#if defined(SERIAL)
 			_port.print(i, BYTE);
-#elif defined MBED_LIBRARY_VERSION
+#elif defined(__ARMCC_VERSION)
 			_port.putc(i);
 #else
 			char c = static_cast<char>(i);
+
+			std::cerr << i << " ";
 
 			boost::asio::write(_port, boost::asio::buffer(&c, 1));
 #endif
@@ -197,3 +229,4 @@ public:
 
 };
 
+#endif /* PLATFORM_H_ */
