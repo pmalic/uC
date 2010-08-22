@@ -20,8 +20,7 @@
 #ifndef XBee_h
 #define XBee_h
 
-#include <WProgram.h>
-#include <inttypes.h>
+#include "Platform.h"
 
 #define SERIES_1
 #define SERIES_2
@@ -668,9 +667,9 @@ private:
  */
 class XBee {
 public:
-	XBee();
+	XBee(Platform::SerialPort);
 	// for eclipse dev only
-	void setSerial(HardwareSerial serial);
+//	void setSerial(Platform::SerialPort serialPort);
 	/**
 	 * Reads all available serial bytes until a packet is parsed, an error occurs, or the buffer is empty.
 	 * You may call <i>xbee</i>.getResponse().isAvailable() after calling this method to determine if
@@ -727,6 +726,7 @@ private:
 	uint8_t _nextFrameId;
 	// buffer for incoming RX packets.  holds only the api specific frame data, starting after the api id byte and prior to checksum
 	uint8_t _responseFrameData[MAX_FRAME_DATA_SIZE];
+	Platform::SerialPort _serialPort;
 };
 
 /**

@@ -18,8 +18,6 @@
  */
 
 #include "XBee.h"
-#include "WProgram.h"
-#include "HardwareSerial.h"
 
 XBeeResponse::XBeeResponse() {
 
@@ -657,7 +655,8 @@ void XBee::resetResponse() {
 	_response.reset();
 }
 
-XBee::XBee(): _response(XBeeResponse()) {
+XBee::XBee(Platform::SerialPort serialPort = Platform::SerialPort())
+: _response(XBeeResponse()), _serialPort(serialPort) {
 	_pos = 0;
 	_escape = false;
 	_checksumTotal = 0;
@@ -680,12 +679,12 @@ uint8_t XBee::getNextFrameId() {
 }
 
 void XBee::begin(long baud) {
-	Serial.begin(baud);
+	_serialPort.begin(baud);
 }
 
-void XBee::setSerial(HardwareSerial serial) {
-	Serial = serial;
-}
+//void XBee::setSerial(HardwareSerial serial) {
+//	Serial = serial;
+//}
 
 XBeeResponse& XBee::getResponse() {
 	return _response;
@@ -715,9 +714,9 @@ bool XBee::readPacket(int timeout) {
 		return false;
 	}
 
-	unsigned long start = millis();
+	Platform::Stopwatch stopwatch;
 
-    while (int((millis() - start)) < timeout) {
+    while (int(stopwatch.read()) < timeout) {
 
      	readPacket();
 
@@ -739,9 +738,9 @@ void XBee::readPacket() {
 		resetResponse();
 	}
 
-    while (Serial.available()) {
+    while (_serialPort.readable()) {
 
-        b = Serial.read();
+        b = _serialPort.read();
 
         if (_pos > 0 && b == START_BYTE && ATAP == 2) {
         	// new packet start before previous packeted completed -- discard previous packet and start over
@@ -750,8 +749,8 @@ void XBee::readPacket() {
         }
 
 		if (_pos > 0 && b == ESCAPE) {
-			if (Serial.available()) {
-				b = Serial.read();
+			if (_serialPort.readable()) {
+				b = _serialPort.read();
 				b = 0x20 ^ b;
 			} else {
 				// escape byte.  next byte will be
@@ -1333,17 +1332,17 @@ void XBee::send(XBeeRequest &request) {
 	sendByte(checksum, true);
 
 	// send packet
-	Serial.flush();
+	_serialPort.flush();
 }
 
 void XBee::sendByte(uint8_t b, bool escape) {
 
 	if (escape && (b == START_BYTE || b == ESCAPE || b == XON || b == XOFF)) {
 //		std::cout << "escaping byte [" << toHexString(b) << "] " << std::endl;
-		Serial.print(ESCAPE, BYTE);
-		Serial.print(b ^ 0x20, BYTE);
+		_serialPort.write(ESCAPE);
+		_serialPort.write(b ^ 0x20);
 	} else {
-		Serial.print(b, BYTE);
+		_serialPort.write(b);
 	}
 }
 

@@ -1,8 +1,10 @@
+CC=g++
+
 main: main.o
-	g++ -L/opt/local/lib -o main main.o -lboost_system
+	$(CC) -L/opt/local/lib -o main main.o ../xbee-api/XBee.o -lboost_system
 
 main.o: main.cpp
-	g++ -Wall -pedantic -I../arduino2boost -I../xbee-api -c main.cpp
+	$(CC) -Wall -pedantic -I../xbee-api -O3 -c main.cpp
 
 clean:
 	rm -f main main.o

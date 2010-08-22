@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "HardwareSerial.h"
-HardwareSerial Serial("/dev/tty.usbserial-A700eX8n");
-#include "XBee.cpp"
+#include "XBee.h"
 
 int main (int argc, char* argv[])
 {
@@ -18,7 +16,7 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
-	XBee xbee = XBee();
+	XBee xbee = XBee(Platform::SerialPort("/dev/tty.usbserial-A700eX8n"));
 
 	uint8_t cmd[] = { argv[1][0], argv[1][1] };
 
