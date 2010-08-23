@@ -1,9 +1,11 @@
-CC=g++
+PLATFORM=_BOOST
+CXX=g++
+CXXFLAGS=-D$(PLATFORM) -Wall -pedantic -O3
 
 all: XBee.o
 
 XBee.o: XBee.cpp XBee.h Platform.h
-	$(CC) -Wall -pedantic -O3 -c XBee.cpp
+	$(CXX) $(CXXFLAGS) -c XBee.cpp
 
 clean:
 	rm -f XBee.o

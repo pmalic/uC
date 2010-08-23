@@ -1,10 +1,13 @@
-CC=g++
+PLATFORM=_BOOST
+CXX=g++
+CXXFLAGS=-D$(PLATFORM) -Wall -pedantic -O3 -I../xbee-api
+LDFLAGS=-L/opt/local/lib
 
 main: main.o
-	$(CC) -L/opt/local/lib -o main main.o ../xbee-api/XBee.o -lboost_system
+	$(CXX) $(LDFLAGS) -o main main.o ../xbee-api/XBee.o -lboost_system
 
 main.o: main.cpp
-	$(CC) -Wall -pedantic -I../xbee-api -O3 -c main.cpp
+	$(CXX) $(CXXFLAGS) -c main.cpp
 
 clean:
 	rm -f main main.o

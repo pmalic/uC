@@ -20,17 +20,18 @@
 #ifndef PLATFORM_H_
 #define PLATFORM_H_
 
-#if defined(SERIAL)
+#if defined(__ARMCC_VERSION)
+	#include <mbed.h>
+#elif defined(_LPC2100)
+	#include <targets/LPC210x.h>
+#elif defined(_BOOST)
+	#include <boost/asio.hpp>
+	#include <boost/date_time/posix_time/posix_time.hpp>
+#else
 	#include <inttypes.h>
 	#include <WProgram.h>
 	#include <HardwareSerial.h>
-#elif defined(__ARMCC_VERSION)
-	#include <mbed.h>
-#else
-	#include <boost/asio.hpp>
-	#include <boost/date_time/posix_time/posix_time.hpp>
 #endif
-
 
 class Platform
 {
@@ -38,23 +39,27 @@ public:
 	class Stopwatch
 	{
 	private:
-#if defined(SERIAL)
-		unsigned long _start;
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 		Timer _timer;
-#else
+#elif defined(_LPC2100)
+		// TODO
+#elif defined(_BOOST)
 		boost::posix_time::ptime _start;
+#else
+		unsigned long _start;
 #endif
 
 	public:
 		Stopwatch ()
 		{
-#if defined(SERIAL)
-			_start = millis();
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			_timer.start();
-#else
+#elif defined(_LPC2100)
+			// TODO
+#elif defined(_BOOST)
 			_start = boost::posix_time::microsec_clock::universal_time();
+#else
+			_start = millis();
 #endif
 		}
 
@@ -67,16 +72,18 @@ public:
 
 		unsigned long read ()
 		{
-#if defined(SERIAL)
-			return millis() - _start;
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			return _timer.read_ms();
+#elif defined(_LPC2100)
+			// TODO
+#elif defined(_BOOST)
+			using namespace boost::posix_time;
+
+			const time_duration diff = ptime(microsec_clock::universal_time()) - _start;
+
+			return static_cast<unsigned long>(diff.total_milliseconds());
 #else
-		using namespace boost::posix_time;
-
-		const time_duration diff = ptime(microsec_clock::universal_time()) - _start;
-
-		return static_cast<unsigned long>(diff.total_milliseconds());
+			return millis() - _start;
 #endif
 		}
 	};
@@ -84,25 +91,32 @@ public:
 	class SerialPortConf
 	{
 	public:
-#if defined(SERIAL)
-		const unsigned short number;
-
-		SerialPortConf (number = 0)
-		: number(number)
-		{
-		}
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 		const PinName tx, rx;
 
 		SerialPortConf (const PinName& tx = p28, const PinName& rx = p27)
 		: tx(tx), rx(rx)
 		{
 		}
-#else
+#elif defined(_LPC2100)
+		const unsigned short number;
+
+		SerialPortConf (number = 1)
+		: number(number)
+		{
+		}
+#elif defined(_BOOST)
 		const std::string name;
 
 		SerialPortConf (const std::string& name = "/dev/tty.usbserial-A700eX8n")
 		: name(name)
+		{
+		}
+#else
+		const unsigned short number;
+
+		SerialPortConf (number = 0)
+		: number(number)
 		{
 		}
 #endif
@@ -112,17 +126,39 @@ public:
 	{
 	private:
 		SerialPortConf _conf;
-#if defined(SERIAL)
-		HardwareSerial _port;
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 		Serial _port;
-#else
+#elif defined(_LPC2100)
+		// nothing
+#elif defined(_BOOST)
 		boost::asio::io_service _io;
 		boost::asio::serial_port _port;
+#else
+		HardwareSerial _port;
 #endif
 
 	public:
-#if defined(SERIAL)
+#if defined(__ARMCC_VERSION)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf), _port(Serial(conf.tx, conf.rx))
+		{
+		}
+#elif defined(_LPC2100)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf)
+		{
+		}
+#elif defined(_BOOST)
+		SerialPort (const SerialPortConf& conf)
+		: _conf(conf), _io(), _port(_io, conf.name)
+		{
+		}
+
+		SerialPort (const SerialPort& serialPort)
+		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
+		{
+		}
+#else
 		SerialPort (const SerialPortConf& conf)
 		: _conf(conf), _port(Serial)
 		{
@@ -142,84 +178,95 @@ public:
 						break;
 				}
 		}
-#elif defined(__ARMCC_VERSION)
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _port(Serial(conf.tx, conf.rx))
-		{
-		}
-#else
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _io(), _port(_io, conf.name)
-		{
-		}
-
-		SerialPort (const SerialPort& serialPort)
-		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
-		{
-		}
 #endif
 
 		void begin (long speed)
 		{
-#if defined(SERIAL)
-			_port.begin(speed);
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			_port.baud(speed);
-#else
+#elif defined(_LPC2100)
+			unsigned int divider = VPBDIV & 3;
+
+			if (divider == 0)
+				divider = 4;
+
+		  const unsigned int divisor = OSCILLATOR_CLOCK_FREQUENCY * (PLLCON & 1 ? (PLLCFG & 0xF) + 1 : 1) / divider / (16 * speed);
+
+		  U1LCR = 0x83; // 8 bit, 1 stop bit, no parity, enable DLAB
+		  U1DLL = divisor & 0xff;
+		  U1DLM = (divisor >> 8) & 0xff;
+		  U1LCR &= ~0x80; // disable DLAB
+		  PINSEL0 = PINSEL0 & ~(0xffff << 16) | (0x5555 << 16);
+		  U1FCR = 1;
+#elif defined(_BOOST)
 			_port.set_option(boost::asio::serial_port_base::baud_rate(speed));
+#else
+			_port.begin(speed);
 #endif
 		}
 
 		int readable ()
 		{
-#if defined(SERIAL)
-			return _port.available();
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			return _port.readable();
-#else
+#elif defined(_LPC2100)
+			return U1LSR & 0x01;
+#elif defined(_BOOST)
 			return 1;
+#else
+			return _port.available();
 #endif
 		}
 
 		int read ()
 		{
-#if defined(SERIAL)
-			return _port.read();
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			return _port.getc();
-#else
+#elif defined(_LPC2100)
+			while (!(U1LSR & 0x01));
+
+			return static_cast<int>(U1RBR);
+#elif defined(_BOOST)
 			char c;
 
 			boost::asio::read(_port, boost::asio::buffer(&c, 1));
 
 			return static_cast<int>(c);
+#else
+			return _port.read();
 #endif
 		}
 
 		void flush ()
 		{
-#if defined(SERIAL)
-			_port.flush();
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			while(_port.readable())
 				_port.getc();
-#else
+#elif defined(_LPC2100)
 			// TODO
+#elif defined(_BOOST)
+			// TODO
+#else
+			_port.flush();
 #endif
 		}
 
 		int write (int i)
 		{
-#if defined(SERIAL)
-			_port.print(i, BYTE);
-#elif defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION)
 			_port.putc(i);
-#else
+#elif defined(_LPC2100)
+			while (!(U1LSR & 0x20));
+
+			U1THR = static_cast<char>(i);
+#elif defined(_BOOST)
 			char c = static_cast<char>(i);
 
 			std::cerr << i << " ";
 
 			boost::asio::write(_port, boost::asio::buffer(&c, 1));
+#else
+			_port.print(i, BYTE);
 #endif
 
 			return i;
