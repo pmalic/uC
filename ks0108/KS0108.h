@@ -12,6 +12,10 @@
   #define OFF	0x00
 #define DISPLAY_STATUS_BUSY	0x80
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void GLCD_Initalize(void);
 void GLCD_WriteData(unsigned char);
 void GLCD_WriteCommand(unsigned char, unsigned char);
@@ -22,5 +26,6 @@ unsigned char GLCD_ReadByteFromROMMemory(char *);
 unsigned char GLCD_ReadData(void);
 void GLCD_Bitmap(char *, unsigned char, unsigned char, unsigned char, unsigned char);
 
-
-
+#ifdef __cplusplus
+}
+#endif

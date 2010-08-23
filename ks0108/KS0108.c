@@ -15,7 +15,7 @@ void GLCD_Initalize(void)
 {
 unsigned char i;
 GLCD_InitalizePorts();
-for(i = 0; i < 3; i++)
+for(i = 0; i < 2; i++)
   GLCD_WriteCommand((DISPLAY_ON_CMD | ON), i);
 }
 //-------------------------------------------------------------------------------------------------
@@ -55,9 +55,9 @@ for(j = 0; j < KS0108_SCREEN_HEIGHT/8; j++)
 void GLCD_WriteChar(char charToWrite)
 {
 int i;
-charToWrite -= 32; 
-for(i = 0; i < 5; i++) 
-  GLCD_WriteData(GLCD_ReadByteFromROMMemory((char *)((int)font5x8 + (5 * charToWrite) + i))); 
+charToWrite -= 32;
+for(i = 0; i < 5; i++)
+  GLCD_WriteData(GLCD_ReadByteFromROMMemory((char *)((int)font5x8 + (5 * charToWrite) + i)));
 GLCD_WriteData(0x00);
 }
 //-------------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ unsigned char i, j;
 for(j = 0; j < dy / 8; j++)
   {
   GLCD_GoTo(x,y + j);
-  for(i = 0; i < dx; i++) 
+  for(i = 0; i < dx; i++)
     GLCD_WriteData(GLCD_ReadByteFromROMMemory(bmp++));
   }
 }

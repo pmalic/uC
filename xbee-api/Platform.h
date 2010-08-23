@@ -199,11 +199,11 @@ public:
 
 		  const unsigned int divisor = OSCILLATOR_CLOCK_FREQUENCY * (PLLCON & 1 ? (PLLCFG & 0xF) + 1 : 1) / divider / (16 * speed);
 
+		  PINSEL0 = (1 << 0x12) | (1 << 0x10);
 		  U1LCR = 0x83; // 8 bit, 1 stop bit, no parity, enable DLAB
 		  U1DLL = divisor & 0xff;
 		  U1DLM = (divisor >> 8) & 0xff;
 		  U1LCR &= ~0x80; // disable DLAB
-		  PINSEL0 = PINSEL0 & ~(0xffff << 16) | (0x5555 << 16);
 		  U1FCR = 1;
 #elif defined(_BOOST)
 			_port.set_option(boost::asio::serial_port_base::baud_rate(speed));

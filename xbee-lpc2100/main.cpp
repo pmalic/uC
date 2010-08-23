@@ -1,9 +1,16 @@
+#include <stdio.h>
+
 extern "C" void __cxa_pure_virtual() { while (1); }
 
 #include "XBee.h"
+#include "KS0108.h"
+
+#define MAX_MSG_SIZE  32
 
 int main (void)
 {
+  GLCD_Initalize();
+  GLCD_ClearScreen();
 
   XBee xbee = XBee();
 
@@ -15,51 +22,57 @@ int main (void)
   xbee.begin(115200);
   xbee.send(atRequest);
 
+  char msg[MAX_MSG_SIZE];
+  GLCD_GoTo(0, 0);
+
   if (!xbee.readPacket(5000))
   {
-//	  if (xbee.getResponse().isError())
-//		  cerr << "Error reading packet. Error code " << static_cast<unsigned short>(xbee.getResponse().getErrorCode()) << endl;
-//	  else
-//		  cerr << "No response from radio." << endl;
+    if (xbee.getResponse().isError())
+      snprintf(msg, MAX_MSG_SIZE, "Read err code: %d", static_cast<unsigned short>(xbee.getResponse().getErrorCode()));
+    else
+      snprintf(msg, MAX_MSG_SIZE, "No response");
 
-	  return 1;
+    GLCD_WriteString(msg);
+
+    return 1;
   }
 
   if (xbee.getResponse().getApiId() != AT_COMMAND_RESPONSE)
   {
-	  //cerr << "Expected AT response but got " << static_cast<unsigned short>(xbee.getResponse().getApiId()) << endl;
-	  return 1;
+    snprintf(msg, MAX_MSG_SIZE, "Got wrong API ID: %d", static_cast<unsigned short>(xbee.getResponse().getApiId()));
+    GLCD_WriteString(msg);
+
+    return 1;
   }
 
   xbee.getResponse().getAtCommandResponse(atResponse);
 
   if (!atResponse.isOk())
   {
-	  //cerr << "Command return error code: " << static_cast<unsigned short>(atResponse.getStatus()) << endl;
-	  return 1;
+    snprintf(msg, MAX_MSG_SIZE, "Cmd err code: %d", static_cast<unsigned short>(atResponse.getStatus()));
+    GLCD_WriteString(msg);
+
+    return 1;
   }
 
-//  cerr << "Command [" << atResponse.getCommand()[0] << atResponse.getCommand()[1] << "] was successful!" << endl;
+  snprintf(msg, MAX_MSG_SIZE, "Cmd [%c%c] succeeded", atResponse.getCommand()[0], atResponse.getCommand()[1]);
+  GLCD_WriteString(msg);
 
   unsigned short valueLen = static_cast<unsigned short>(atResponse.getValueLength());
 
   if (valueLen)
   {
-//	  cerr << "Command value (length " << valueLen << "):" << endl;
+    GLCD_GoTo(0, 1);
+    snprintf(msg, MAX_MSG_SIZE, "Cmd val (len %d):", valueLen);
+    GLCD_WriteString(msg);
 
-//	  cerr << hex << uppercase;
-
-	  char c, d;
-
-	  for (int i = 0; i < valueLen; ++i)
-	  {
-		  c = static_cast<unsigned short>(atResponse.getValue()[i]);
-		  d = c;
-	   }
-
-//	  cerr << dec << nouppercase << endl;
+    GLCD_GoTo(0, 2);
+    for (int i = 0; i < valueLen; ++i)
+    {
+      snprintf(msg, MAX_MSG_SIZE, "%X ", static_cast<unsigned short>(atResponse.getValue()[i]));
+      GLCD_WriteString(msg);
+    }
   }
-
 
   return 0;
 }

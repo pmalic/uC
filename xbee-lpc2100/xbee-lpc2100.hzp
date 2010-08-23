@@ -1,7 +1,7 @@
 <!DOCTYPE CrossStudio_Project_File>
 <solution Name="xbee-lpc2100" version="2">
   <project Name="xbee-lpc2100">
-    <configuration Name="Common" Target="LPC2148" arm_architecture="v4T" arm_core_type="ARM7TDMI-S" arm_simulator_memory_simulation_filename="$(PackagesDir)/targets/Philips_LPC210X/LPC2000SimulatorMemory.dll" arm_simulator_memory_simulation_parameter="LPC21;0x80000;0x8000" arm_target_debug_interface_type="ARM7TDI" arm_target_loader_parameter="12000000" c_preprocessor_definitions="_LPC2100" c_user_include_directories="../xbee-api" cpp_only_additional_options="" gcc_entry_point="reset_handler" link_include_startup_code="No" linker_additional_files="$(PackagesDir)/lib/liblpc2000$(LibExt)$(LIB)" linker_memory_map_file="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC2148_MemoryMap.xml" oscillator_frequency="12MHz" project_directory="" project_type="Executable" property_groups_file_path="$(PackagesDir)/targets/Philips_LPC210X/propertyGroups21xx.xml"/>
+    <configuration Name="Common" Target="LPC2148" arm_architecture="v4T" arm_core_type="ARM7TDMI-S" arm_simulator_memory_simulation_filename="$(PackagesDir)/targets/Philips_LPC210X/LPC2000SimulatorMemory.dll" arm_simulator_memory_simulation_parameter="LPC21;0x80000;0x8000" arm_target_debug_interface_type="ARM7TDI" arm_target_loader_parameter="12000000" c_preprocessor_definitions="_LPC2100" c_user_include_directories="../xbee-api;../ks0108" cpp_only_additional_options="" gcc_entry_point="reset_handler" link_include_startup_code="No" linker_additional_files="$(PackagesDir)/lib/liblpc2000$(LibExt)$(LIB)" linker_memory_map_file="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC2148_MemoryMap.xml" oscillator_frequency="12MHz" project_directory="" project_type="Executable" property_groups_file_path="$(PackagesDir)/targets/Philips_LPC210X/propertyGroups21xx.xml"/>
     <configuration Name="RAM" Placement="RAM" linker_section_placement_file="$(StudioDir)/targets/sram_placement.xml" target_reset_script="SRAMReset()"/>
     <configuration Name="Flash" Placement="Flash" arm_target_flash_loader_file_path="$(PackagesDir)/targets/Philips_LPC210X/Release/Loader_rpc.elf" arm_target_flash_loader_type="LIBMEM RPC Loader" linker_section_placement_file="$(StudioDir)/targets/flash_placement.xml" target_reset_script="FLASHReset()"/>
     <folder Name="Source Files">
@@ -9,9 +9,19 @@
       <file file_name="main.cpp">
         <configuration Name="Common" c_preprocessor_definitions="" c_user_include_directories=""/>
       </file>
-      <file file_name="../xbee-api/XBee.h"/>
-      <file file_name="../xbee-api/Platform.h"/>
-      <file file_name="../xbee-api/XBee.cpp"/>
+      <folder Name="ks0108">
+        <file file_name="../ks0108/KS0108-LPC.c"/>
+        <file file_name="../ks0108/font5x8.h"/>
+        <file file_name="../ks0108/graphic.c"/>
+        <file file_name="../ks0108/graphic.h"/>
+        <file file_name="../ks0108/KS0108.c"/>
+        <file file_name="../ks0108/KS0108.h"/>
+      </folder>
+      <folder Name="xbee">
+        <file file_name="../xbee-api/XBee.h"/>
+        <file file_name="../xbee-api/Platform.h"/>
+        <file file_name="../xbee-api/XBee.cpp"/>
+      </folder>
     </folder>
     <folder Name="System Files">
       <file file_name="$(StudioDir)/source/crt0.s"/>

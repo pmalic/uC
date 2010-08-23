@@ -1,30 +1,31 @@
 //-------------------------------------------------------------------------------------------------
 // Universal KS0108 driver library
 // NXP LPC2000 MCU low-level driver
-// (c) Rados³aw Kwiecieñ, radek@dxp.pl
+// (c) Radosï¿½aw Kwiecieï¿½, radek@dxp.pl
 //-------------------------------------------------------------------------------------------------
-#include <build/lpc213x.h>
+#include <targets/LPC210x.h>
+#include <targets/LPC2148.h>
 
 // data bus
-#define KS0108_DATA_DIR		IODIR0
-#define KS0108_DATA_PIN		IOPIN0
-#define KS0108_DATA_SET		IOSET0
-#define KS0108_DATA_CLR		IOCLR0
+#define KS0108_DATA_DIR		IO0DIR
+#define KS0108_DATA_PIN		IO0PIN
+#define KS0108_DATA_SET		IO0SET
+#define KS0108_DATA_CLR		IO0CLR
 
-#define KS0108_D0			16
+#define KS0108_D0			0
 
 // control bus
-#define KS0108_CTRL_DIR		IODIR0
-#define KS0108_CTRL_SET		IOSET0
-#define KS0108_CTRL_CLR		IOCLR0
+#define KS0108_CTRL_DIR		IO0DIR
+#define KS0108_CTRL_SET		IO0SET
+#define KS0108_CTRL_CLR		IO0CLR
 
-#define KS0108_RS			(1 << 8)
-#define KS0108_RW			(1 << 9)
-#define KS0108_EN			(1 << 10)
+#define KS0108_RS			(1 << 17)
+#define KS0108_RW			(1 << 16)
+#define KS0108_EN			(1 << 19)
 
-#define KS0108_CS1			(1 << 12)
-#define KS0108_CS2			(1 << 11)
-#define KS0108_CS3			(1 << 13)
+#define KS0108_CS1			(1 << 15)
+#define KS0108_CS2			(1 << 18)
+#define KS0108_CS3			(1 << 31)
 
 #define DISPLAY_STATUS_BUSY	0x80
 
@@ -36,8 +37,8 @@ extern unsigned char screen_y;
 //-------------------------------------------------------------------------------------------------
 void GLCD_Delay(void)
 {
-asm("nop");
-asm("nop");
+__asm("nop");
+__asm("nop");
 }
 //-------------------------------------------------------------------------------------------------
 // Enalbe Controller (0-2)
