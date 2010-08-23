@@ -23,6 +23,8 @@
 #if defined(__ARMCC_VERSION)
 	#include <mbed.h>
 #elif defined(_LPC2100)
+	#include <cstddef>
+	#include <stdint.h>
 	#include <targets/LPC210x.h>
 #elif defined(_BOOST)
 	#include <boost/asio.hpp>
@@ -42,7 +44,7 @@ public:
 #if defined(__ARMCC_VERSION)
 		Timer _timer;
 #elif defined(_LPC2100)
-		// TODO
+		// nothing
 #elif defined(_BOOST)
 		boost::posix_time::ptime _start;
 #else
@@ -55,7 +57,10 @@ public:
 #if defined(__ARMCC_VERSION)
 			_timer.start();
 #elif defined(_LPC2100)
-			// TODO
+		  T0PR = 58982 / VPBDIV - 1; // prescale divider
+		  T0TCR = 3; // reset counter
+		  T0IR = 0xff; // clear interrupts
+		  T0TCR = 1; // start counting
 #elif defined(_BOOST)
 			_start = boost::posix_time::microsec_clock::universal_time();
 #else
@@ -63,19 +68,21 @@ public:
 #endif
 		}
 
-#if defined(__ARMCC_VERSION)
 		~Stopwatch ()
 		{
+#if defined(__ARMCC_VERSION)
 			_timer.stop();
-		}
+#elif defined(_LPC2100)
+			T0TCR = 2;
 #endif
+		}
 
 		unsigned long read ()
 		{
 #if defined(__ARMCC_VERSION)
 			return _timer.read_ms();
 #elif defined(_LPC2100)
-			// TODO
+			return T0TC;
 #elif defined(_BOOST)
 			using namespace boost::posix_time;
 
@@ -101,7 +108,7 @@ public:
 #elif defined(_LPC2100)
 		const unsigned short number;
 
-		SerialPortConf (number = 1)
+		SerialPortConf (const unsigned short number = 1)
 		: number(number)
 		{
 		}
@@ -115,7 +122,7 @@ public:
 #else
 		const unsigned short number;
 
-		SerialPortConf (number = 0)
+		SerialPortConf (const unsigned short number = 0)
 		: number(number)
 		{
 		}
