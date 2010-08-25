@@ -122,7 +122,7 @@ public:
 #else
 		const unsigned short number;
 
-		SerialPortConf (const unsigned short number = 0)
+		SerialPortConf (const unsigned short number = 1)
 		: number(number)
 		{
 		}
@@ -169,21 +169,24 @@ public:
 		SerialPort (const SerialPortConf& conf)
 		: _conf(conf), _port(Serial)
 		{
-			if (conf.number)
-				switch (conf.number)
-				{
-					case 1:
-						_port = Serial1;
-						break;
+#if defined(USE_MEGA)
+			switch (conf.number)
+			{
+				case 2:
+					_port = Serial2;
+					break;
 
-					case 2:
-						_port = Serial2;
-						break;
+				case 3:
+					_port = Serial3;
+					break;
 
-					case 3:
-						_port = Serial3;
-						break;
-				}
+				default:
+					_port = Serial1;
+					break;
+			}
+#else
+			_port = Serial;
+#endif
 		}
 #endif
 
