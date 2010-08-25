@@ -61,7 +61,7 @@ int main (int argc, char* argv[])
 		cerr << hex << uppercase;
 
 		for (int i = 0; i < valueLen; ++i)
-			cerr << static_cast<unsigned short>(atResponse.getValue()[i]) << " ";
+			cerr << static_cast<char>(atResponse.getValue()[i]) << " ";
 
 		cerr << dec << nouppercase << endl;
 	}

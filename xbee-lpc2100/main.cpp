@@ -14,7 +14,7 @@ int main (void)
 
   XBee xbee = XBee();
 
-  uint8_t cmd[] = { 'V', 'R' };
+  uint8_t cmd[] = { 'N', 'I' };
 
   AtCommandRequest atRequest = AtCommandRequest(cmd);
   AtCommandResponse atResponse = AtCommandResponse();
@@ -69,7 +69,7 @@ int main (void)
     GLCD_GoTo(0, 2);
     for (int i = 0; i < valueLen; ++i)
     {
-      snprintf(msg, MAX_MSG_SIZE, "%X ", static_cast<unsigned short>(atResponse.getValue()[i]));
+      snprintf(msg, MAX_MSG_SIZE, "%c ", static_cast<unsigned short>(atResponse.getValue()[i]));
       GLCD_WriteString(msg);
     }
   }

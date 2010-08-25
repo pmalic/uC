@@ -22,7 +22,7 @@
 
 #include "Platform.h"
 
-#define SERIES_1
+//#define SERIES_1
 #define SERIES_2
 
 // set to ATAP value of XBee. AP=2 is recommended

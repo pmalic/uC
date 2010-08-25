@@ -269,8 +269,6 @@ public:
 #elif defined(_BOOST)
 			char c = static_cast<char>(i);
 
-			std::cerr << i << " ";
-
 			boost::asio::write(_port, boost::asio::buffer(&c, 1));
 #else
 			_port.print(i, BYTE);
