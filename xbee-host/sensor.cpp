@@ -10,7 +10,7 @@
 
 void sendOffer (XBee &xbee, XBeeAddress64& addr)
 {
-	std::cerr << "Sending offer msg..." << std::endl;
+	std::cerr << "Sending offer msg to " << std::hex << addr.getMsb() << ":" << addr.getLsb() << "..." << std::endl;
 
 	wsan::OfferMsg msg("PM2");
 
@@ -37,9 +37,7 @@ int main (int argc, char* argv[])
 
 	while (true)
 	{
-		std::cerr << "Starting read..." << std::endl;
-
-		xbee.readPacket(1000);
+		xbee.readPacket(5000);
 
 		if (!xbee.getResponse().isAvailable() || xbee.getResponse().getApiId() != ZB_RX_RESPONSE)
 			continue;
@@ -51,9 +49,9 @@ int main (int argc, char* argv[])
 		if (!frameLen || rx.getData(0) != wsan::Msg::PREAMBLE || rx.getData(1) != wsan::DiscoverMsg::MSG_TYPE)
 			continue;
 
-		sendOffer(xbee, rx.getRemoteAddress64());
+		usleep(100);
 
-		sleep(1);
+		sendOffer(xbee, rx.getRemoteAddress64());
 	}
 
 	return 0;

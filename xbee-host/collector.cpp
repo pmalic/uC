@@ -29,12 +29,11 @@ void readDiscovery (XBee &xbee)
 
 	while (stopwatch.read() < 3000)
 	{
-		if (!xbee.readPacket(500))
-			continue;
+		xbee.readPacket();
 
 		XBeeResponse& res = xbee.getResponse();
 
-		if (res.getApiId() != ZB_RX_RESPONSE)
+		if (!res.isAvailable() || res.getApiId() != ZB_RX_RESPONSE)
 			continue;
 
 		ZBRxResponse rx = ZBRxResponse();
@@ -48,6 +47,8 @@ void readDiscovery (XBee &xbee)
 		wsan::OfferMsg msg(rx.getData());
 
 		std::cerr << "Got offer from node: " << msg.header.node_name << std::endl;
+
+		usleep(10);
 	}
 
 }

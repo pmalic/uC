@@ -143,10 +143,11 @@ public:
 		boost::asio::io_service _io;
 		boost::asio::serial_port _port;
 
-		boost::thread _thread;
-		size_t _readable;
+		boost::thread _rdthr;
 		char _rdbuf[128];
-		unsigned short _rdbuf_pos;
+
+		boost::mutex _rdmtx;
+		std::vector<char> _rdque;
 
 		void _start ()
 		{
@@ -155,7 +156,8 @@ public:
 			_io.post(bind(&SerialPort::_read, this));
 
 			thread t(bind(&asio::io_service::run, &_io));
-			_thread.swap(t);
+
+			_rdthr.swap(t);
 		}
 
 		void _read ()
@@ -167,10 +169,15 @@ public:
 
 		void _read_done (const boost::system::error_code& error, size_t bytes_transferred)
 		{
-			if (!error)
+			using namespace boost;
+
+			if (error)
+				this_thread::sleep(posix_time::milliseconds(10));
+			else
 			{
-				_readable = bytes_transferred;
-				_rdbuf_pos = 0;
+				lock_guard<mutex> lck(_rdmtx);
+
+				_rdque.insert(_rdque.end(), _rdbuf, _rdbuf + bytes_transferred);
 			}
 
 			if (_port.is_open())
@@ -201,13 +208,13 @@ public:
 		}
 #elif defined(_BOOST)
 		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _io(), _port(_io, conf.name), _readable(0), _rdbuf_pos(0)
+		: _conf(conf), _io(), _port(_io, conf.name)
 		{
 			_start();
 		}
 
 		SerialPort (const SerialPort& serialPort)
-		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name), _readable(0), _rdbuf_pos(0)
+		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
 		{
 			_start();
 		}
@@ -241,7 +248,7 @@ public:
 		{
 			_io.post(boost::bind(&SerialPort::_close, this));
 
-			_thread.join();
+			_rdthr.join();
 		}
 #endif
 
@@ -277,7 +284,9 @@ public:
 #elif defined(_LPC2100)
 			return U1LSR & 0x01;
 #elif defined(_BOOST)
-			return static_cast<int>(_readable);
+			boost::lock_guard<boost::mutex> lck(_rdmtx);
+
+			return static_cast<int>(_rdque.size());
 #else
 			return _port.available();
 #endif
@@ -292,14 +301,16 @@ public:
 
 			return static_cast<int>(U1RBR);
 #elif defined(_BOOST)
-			if (_readable)
-			{
-				--_readable;
+			boost::lock_guard<boost::mutex> lck(_rdmtx);
 
-				return static_cast<int>(_rdbuf[_rdbuf_pos++]);
-			}
-			else
+			if (_rdque.empty())
 				return -1;
+
+			char c = _rdque.front();
+
+			_rdque.erase(_rdque.begin());
+
+			return c;
 #else
 			return _port.read();
 #endif
@@ -313,7 +324,9 @@ public:
 #elif defined(_LPC2100)
 			// TODO
 #elif defined(_BOOST)
-			_readable = 0;
+			boost::lock_guard<boost::mutex> lck(_rdmtx);
+
+			_rdque.clear();
 #else
 			_port.flush();
 #endif
