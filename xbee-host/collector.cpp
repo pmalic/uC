@@ -8,22 +8,25 @@
 #include "wsan/DiscoverMsg.h"
 #include "wsan/OfferMsg.h"
 
-void sendDiscovery (XBee &xbee)
+using namespace std;
+using namespace wsan;
+
+void sendDiscovery (XBee& xbee)
 {
-	std::cerr << "Sending discovery msg..." << std::endl;
+	cerr << "Sending discovery msg..." << endl;
 
 	XBeeAddress64 addr = XBeeAddress64(0x0, 0xffff);
 
-	wsan::DiscoverMsg msg;
+	DiscoverMsg msg;
 
 	ZBTxRequest tx = ZBTxRequest(addr, msg.getFrame(), msg.getFrameLen());
 
 	xbee.send(tx);
 }
 
-void readDiscovery (XBee &xbee)
+void readDiscovery (XBee& xbee, vector<OfferMsg>& offers)
 {
-	std::cerr << "Waiting for offer msgs..." << std::endl;
+	cerr << "Waiting for offer msgs..." << endl;
 
 	Platform::Stopwatch stopwatch;
 
@@ -41,12 +44,12 @@ void readDiscovery (XBee &xbee)
 
 		uint8_t len = rx.getDataLength();
 
-		if (!len || rx.getData(0) != wsan::Msg::PREAMBLE || rx.getData(1) != wsan::OfferMsg::MSG_TYPE)
+		if (!len || rx.getData(0) != Msg::PREAMBLE || rx.getData(1) != OfferMsg::MSG_TYPE)
 			continue;
 
-		wsan::OfferMsg msg(rx.getData());
+		OfferMsg msg(rx.getData());
 
-		std::cerr << "Got offer from node: " << msg.header.node_name << std::endl;
+		offers.push_back(msg);
 
 		usleep(10);
 	}
@@ -55,9 +58,6 @@ void readDiscovery (XBee &xbee)
 
 int main (int argc, char* argv[])
 {
-	using namespace std;
-	using namespace wsan;
-
 	if (argc < 2)
 	{
 		cerr << "Not enough parameters!" << endl;
@@ -68,11 +68,23 @@ int main (int argc, char* argv[])
 
 	xbee.begin(115200);
 
+	vector<OfferMsg> offers;
+
 	while (true)
 	{
 		sendDiscovery(xbee);
 
-		readDiscovery(xbee);
+		readDiscovery(xbee, offers);
+
+		cerr << "Received offers:" << endl;
+
+		for (vector<OfferMsg>::const_iterator it = offers.begin(), it_end = offers.end(); it != it_end; ++it)
+		{
+			const OfferMsg& msg = *it;
+			cerr << msg.header.node_name << ": " << (msg.header.val / 100.0) << " C" << endl;
+		}
+
+		offers.clear();
 	}
 
 	return 0;
