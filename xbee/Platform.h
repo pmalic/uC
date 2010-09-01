@@ -148,25 +148,41 @@ public:
 		char _rdbuf[128];
 		unsigned short _rdbuf_pos;
 
-		void _async_read_wait ()
+		void _start ()
 		{
-			using namespace boost::asio;
+			using namespace boost;
 
-			_readable = 0;
+			_io.post(bind(&SerialPort::_read, this));
 
-			_port.async_read_some(buffer(_rdbuf, 128), boost::bind(&SerialPort::_async_read_done, this, placeholders::error, placeholders::bytes_transferred));
+			thread t(bind(&asio::io_service::run, &_io));
+			_thread.swap(t);
 		}
 
-		void _async_read_done (const boost::system::error_code& error, size_t bytes_transferred)
+		void _read ()
+		{
+			using namespace boost;
+
+			_port.async_read_some(asio::buffer(_rdbuf, 128), bind(&SerialPort::_read_done, this, asio::placeholders::error, asio::placeholders::bytes_transferred));
+		}
+
+		void _read_done (const boost::system::error_code& error, size_t bytes_transferred)
 		{
 			if (!error)
 			{
-				std::cerr << "got something";
 				_readable = bytes_transferred;
 				_rdbuf_pos = 0;
 			}
 
-			_async_read_wait();
+			if (_port.is_open())
+				_read();
+		}
+
+		void _close ()
+		{
+			if (_port.is_open())
+				_port.close();
+
+			_io.reset();
 		}
 #else
 		HardwareSerial _port;
@@ -187,17 +203,13 @@ public:
 		SerialPort (const SerialPortConf& conf)
 		: _conf(conf), _io(), _port(_io, conf.name), _readable(0), _rdbuf_pos(0)
 		{
-			_thread(boost::bind(&boost::asio::io_service::run, &_io));
-
-			_async_read_wait();
+			_start();
 		}
 
 		SerialPort (const SerialPort& serialPort)
 		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name), _readable(0), _rdbuf_pos(0)
 		{
-			_thread(boost::bind(&boost::asio::io_service::run, &_io));
-
-			_async_read_wait();
+			_start();
 		}
 #else
 		SerialPort (const SerialPortConf& conf)
@@ -221,6 +233,15 @@ public:
 #else
 			_port = Serial;
 #endif
+		}
+#endif
+
+#if defined(_BOOST)
+		~SerialPort ()
+		{
+			_io.post(boost::bind(&SerialPort::_close, this));
+
+			_thread.join();
 		}
 #endif
 
