@@ -28,6 +28,8 @@
 	#include <targets/LPC210x.h>
 #elif defined(_BOOST)
 	#include <boost/asio.hpp>
+	#include <boost/bind.hpp>
+	#include <boost/thread.hpp>
 	#include <boost/date_time/posix_time/posix_time.hpp>
 #else
 	#include <inttypes.h>
@@ -140,6 +142,32 @@ public:
 #elif defined(_BOOST)
 		boost::asio::io_service _io;
 		boost::asio::serial_port _port;
+
+		boost::thread _thread;
+		size_t _readable;
+		char _rdbuf[128];
+		unsigned short _rdbuf_pos;
+
+		void _async_read_wait ()
+		{
+			using namespace boost::asio;
+
+			_readable = 0;
+
+			_port.async_read_some(buffer(_rdbuf, 128), boost::bind(&SerialPort::_async_read_done, this, placeholders::error, placeholders::bytes_transferred));
+		}
+
+		void _async_read_done (const boost::system::error_code& error, size_t bytes_transferred)
+		{
+			if (!error)
+			{
+				std::cerr << "got something";
+				_readable = bytes_transferred;
+				_rdbuf_pos = 0;
+			}
+
+			_async_read_wait();
+		}
 #else
 		HardwareSerial _port;
 #endif
@@ -157,13 +185,19 @@ public:
 		}
 #elif defined(_BOOST)
 		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _io(), _port(_io, conf.name)
+		: _conf(conf), _io(), _port(_io, conf.name), _readable(0), _rdbuf_pos(0)
 		{
+			_thread(boost::bind(&boost::asio::io_service::run, &_io));
+
+			_async_read_wait();
 		}
 
 		SerialPort (const SerialPort& serialPort)
-		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
+		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name), _readable(0), _rdbuf_pos(0)
 		{
+			_thread(boost::bind(&boost::asio::io_service::run, &_io));
+
+			_async_read_wait();
 		}
 #else
 		SerialPort (const SerialPortConf& conf)
@@ -222,7 +256,7 @@ public:
 #elif defined(_LPC2100)
 			return U1LSR & 0x01;
 #elif defined(_BOOST)
-			return 1;
+			return static_cast<int>(_readable);
 #else
 			return _port.available();
 #endif
@@ -237,11 +271,14 @@ public:
 
 			return static_cast<int>(U1RBR);
 #elif defined(_BOOST)
-			char c;
+			if (_readable)
+			{
+				--_readable;
 
-			boost::asio::read(_port, boost::asio::buffer(&c, 1));
-
-			return static_cast<int>(c);
+				return static_cast<int>(_rdbuf[_rdbuf_pos++]);
+			}
+			else
+				return -1;
 #else
 			return _port.read();
 #endif
@@ -255,7 +292,7 @@ public:
 #elif defined(_LPC2100)
 			// TODO
 #elif defined(_BOOST)
-			// TODO
+			_readable = 0;
 #else
 			_port.flush();
 #endif

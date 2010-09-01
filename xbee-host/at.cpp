@@ -4,21 +4,21 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "XBee.h"
+#include "xbee/XBee.h"
 
 int main (int argc, char* argv[])
 {
 	using namespace std;
 
-	if (argc < 2)
+	if (argc < 3)
 	{
-		cerr << "No command!" << endl;
+		cerr << "Not enough parameters!" << endl;
 		return 1;
 	}
 
-	XBee xbee = XBee(); //Platform::SerialPortConf("/dev/tty.usbserial-A700eX8n"));
+	XBee xbee = XBee(Platform::SerialPortConf(argv[1]));
 
-	uint8_t cmd[] = { argv[1][0], argv[1][1] };
+	uint8_t cmd[] = { argv[2][0], argv[2][1] };
 
 	AtCommandRequest atRequest = AtCommandRequest(cmd);
 	AtCommandResponse atResponse = AtCommandResponse();
