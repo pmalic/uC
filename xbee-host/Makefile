@@ -14,13 +14,13 @@ at.o: at.cpp
 sensor: sensor.o
 	$(CXX) $(LDFLAGS) -o sensor sensor.o ../xbee/XBee.o
 
-sensor.o: sensor.cpp
+sensor.o: sensor.cpp ../wsan/Msg.h ../wsan/DiscoverMsg.h ../wsan/OfferMsg.h
 	$(CXX) $(CXXFLAGS) -c sensor.cpp
 
 collector: collector.o
 	$(CXX) $(LDFLAGS) -o collector collector.o ../xbee/XBee.o
 
-collector.o: collector.cpp
+collector.o: collector.cpp ../wsan/Msg.h ../wsan/DiscoverMsg.h ../wsan/OfferMsg.h
 	$(CXX) $(CXXFLAGS) -c collector.cpp
 
 clean:

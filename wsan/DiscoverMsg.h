@@ -16,7 +16,7 @@ public:
 	{
 		Msg::Header common;
 		uint8_t msg_type;
-	} Header;
+	} __attribute__((packed)) Header;
 
 	Header header;
 

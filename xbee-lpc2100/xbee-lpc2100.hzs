@@ -17,12 +17,15 @@
  </Memory4>
  <Project>
   <ProjectSessionItem path="xbee-lpc2100" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;xbee-lpc2100" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;xbee-lpc2100;Source Files" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;xbee-lpc2100;System Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;at" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;at;Source Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files;ks0108" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files;wsan" name="unnamed" />
  </Project>
  <Register1>
-  <RegisterWindow openNodes="TIMER0" binaryNodes="" unsignedNodes="TIMER0/T0TC;TIMER0/T0PR;TIMER0/T0PC" visibleGroups="TIMER0" decimalNodes="" octalNodes="" asciiNodes="" />
+  <RegisterWindow openNodes="" binaryNodes="" unsignedNodes="" visibleGroups="" decimalNodes="" octalNodes="" asciiNodes="" />
  </Register1>
  <Register2>
   <RegisterWindow openNodes="" binaryNodes="" unsignedNodes="" visibleGroups="" decimalNodes="" octalNodes="" asciiNodes="" />
@@ -49,12 +52,6 @@
  <Watch4>
   <Watches active="0" update="Never" />
  </Watch4>
- <Files>
-  <SessionOpenFile useTextEdit="1" useBinaryEdit="0" codecName="Latin1" x="0" debugPath="Z:\uc\xbee-lpc2100\main.cpp" y="20" path="Z:\uc\xbee-lpc2100\main.cpp" left="0" selected="1" name="unnamed" top="12" />
-  <SessionOpenFile useTextEdit="1" useBinaryEdit="0" codecName="Latin1" x="0" debugPath="Z:\uc\ks0108\KS0108-LPC.c" y="72" path="Z:\uc\ks0108\KS0108-LPC.c" left="0" selected="0" name="unnamed" top="28" />
-  <SessionOpenFile useTextEdit="1" useBinaryEdit="0" codecName="Latin1" x="0" debugPath="Z:\uc\ks0108\KS0108.c" y="17" path="Z:\uc\ks0108\KS0108.c" left="0" selected="0" name="unnamed" top="9" />
-  <SessionOpenFile useTextEdit="1" useBinaryEdit="0" codecName="Latin1" x="0" debugPath="Z:\uc\ks0108\KS0108.h" y="27" path="Z:\uc\ks0108\KS0108.h" left="0" selected="0" name="unnamed" top="9" />
-  <SessionOpenFile useTextEdit="1" useBinaryEdit="0" codecName="Latin1" x="0" debugPath="C:\Program Files\Rowley Associates Limited\CrossWorks for ARM 2.0\source\crt0.s" y="279" path="C:\Program Files\Rowley Associates Limited\CrossWorks for ARM 2.0\source\crt0.s" left="0" selected="0" name="unnamed" top="265" />
- </Files>
- <ARMCrossStudioWindow activeProject="xbee-lpc2100" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-api" fileDialogDefaultFilter="*.*" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Debug" />
+ <Files/>
+ <ARMCrossStudioWindow activeProject="collector" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\wsan" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
 </session>

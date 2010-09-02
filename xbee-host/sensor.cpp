@@ -16,7 +16,6 @@ void sendOffer (XBee &xbee, XBeeAddress64& addr)
 	cerr << "Sending offer msg to " << hex << addr.getMsb() << ":" << addr.getLsb() << "..." << endl;
 
 	OfferMsg msg("PM2");
-
 	msg.header.val = 2550;
 
 	ZBTxRequest tx = ZBTxRequest(addr, msg.getFrame(), msg.getFrameLen());

@@ -1,9 +1,8 @@
 #include <stdio.h>
-
-extern "C" void __cxa_pure_virtual() { while (1); }
-
 #include "xbee/XBee.h"
 #include "ks0108/KS0108.h"
+
+extern "C" void __cxa_pure_virtual() { while (1); }
 
 #define MAX_MSG_SIZE  32
 

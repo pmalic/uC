@@ -17,9 +17,8 @@ public:
 		Msg::Header common;
 		uint8_t msg_type;
 		char node_name[16];
-		uint8_t sensors_info[8];
-		uint8_t actuator_info[8];
-	} Header;
+		uint32_t val;
+	} __attribute__((packed)) Header;
 
 	Header header;
 
@@ -34,7 +33,7 @@ public:
 
 	OfferMsg (const uint8_t* frame)
 	{
-		memcpy(&header, frame, sizeof(header));
+		memcpy(&header, frame, sizeof header);
 	}
 
 	uint8_t* getFrame ()

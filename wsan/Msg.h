@@ -13,7 +13,7 @@ public:
 	typedef struct
 	{
 		uint8_t preamble;
-	} Header;
+	} __attribute__((packed)) Header;
 
 	virtual uint8_t* getFrame () = 0;
 
