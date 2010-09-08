@@ -106,6 +106,42 @@
         <file file_name="../xbee/XBee.cpp"/>
       </folder>
       <file file_name="sensor.cpp"/>
+      <folder Name="onewire">
+        <file file_name="../onewire/OneWire.h"/>
+        <file file_name="../onewire/OneWire.cpp"/>
+      </folder>
+    </folder>
+    <folder Name="System Files">
+      <file file_name="$(StudioDir)/source/crt0.s"/>
+      <file file_name="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC210X_Startup.s"/>
+      <file file_name="$(PackagesDir)/targets/Philips_LPC210X/LPC210x.c"/>
+      <file file_name="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC210X_Target.js">
+        <configuration Name="Common" file_type="Reset Script"/>
+      </file>
+      <file file_name="$(PackagesDir)/targets/Philips_LPC210X/VIC.c"/>
+      <file file_name="$(PackagesDir)/targets/Philips_LPC210X/VIC_irq_handler.s"/>
+    </folder>
+  </project>
+  <project Name="temp">
+    <configuration Name="Common" Target="LPC2148" arm_architecture="v4T" arm_core_type="ARM7TDMI-S" arm_simulator_memory_simulation_filename="$(PackagesDir)/targets/Philips_LPC210X/LPC2000SimulatorMemory.dll" arm_simulator_memory_simulation_parameter="LPC21;0x80000;0x8000" arm_target_debug_interface_type="ARM7TDI" arm_target_loader_parameter="12000000" c_preprocessor_definitions="" c_user_include_directories="" cpp_only_additional_options="" gcc_entry_point="reset_handler" link_include_startup_code="No" linker_additional_files="$(PackagesDir)/lib/liblpc2000$(LibExt)$(LIB)" linker_memory_map_file="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC2148_MemoryMap.xml" oscillator_frequency="12MHz" project_directory="" project_type="Executable" property_groups_file_path="$(PackagesDir)/targets/Philips_LPC210X/propertyGroups21xx.xml"/>
+    <configuration Name="RAM" Placement="RAM" linker_section_placement_file="$(StudioDir)/targets/sram_placement.xml" target_reset_script="SRAMReset()"/>
+    <configuration Name="Flash" Placement="Flash" arm_target_flash_loader_file_path="$(PackagesDir)/targets/Philips_LPC210X/Release/Loader_rpc.elf" arm_target_flash_loader_type="LIBMEM RPC Loader" linker_section_placement_file="$(StudioDir)/targets/flash_placement.xml" target_reset_script="FLASHReset()"/>
+    <folder Name="Source Files">
+      <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc"/>
+      <folder Name="ks0108">
+        <file file_name="../ks0108/KS0108-LPC.c"/>
+        <file file_name="../ks0108/font5x8.h"/>
+        <file file_name="../ks0108/graphic.c"/>
+        <file file_name="../ks0108/graphic.h"/>
+        <file file_name="../ks0108/KS0108.c"/>
+        <file file_name="../ks0108/KS0108.h"/>
+      </folder>
+      <folder Name="onewire">
+        <file file_name="../onewire/OneWire.h"/>
+        <file file_name="../onewire/OneWire.cpp"/>
+        <file file_name="../onewire/compat.h"/>
+      </folder>
+      <file file_name="temp.cpp"/>
     </folder>
     <folder Name="System Files">
       <file file_name="$(StudioDir)/source/crt0.s"/>

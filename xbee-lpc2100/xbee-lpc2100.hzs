@@ -1,7 +1,9 @@
 <!DOCTYPE CrossStudio_for_ARM_Session_File>
 <session>
  <Bookmarks/>
- <Breakpoints/>
+ <Breakpoints>
+  <BreakpointListItem line="163" action="" hardwareBreakpoint="" trigger="" useHWbreakpoint="false" group="Breakpoints" type="Breakpoint" state="2" counter="0" isFunctionBreakpoint="false" filename="Z:\uc\onewire\OneWire.cpp" expression="" />
+ </Breakpoints>
  <ExecutionCountWindow/>
  <Memory1>
   <MemoryWindow autoEvaluate="0" addressText="" numColumns="8" sizeText="" dataSize="1" radix="16" addressSpace="" />
@@ -18,14 +20,14 @@
  <Project>
   <ProjectSessionItem path="xbee-lpc2100" name="unnamed" />
   <ProjectSessionItem path="xbee-lpc2100;at" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;at;Source Files" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files;ks0108" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files;wsan" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;at;System Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;temp" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files;ks0108" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files;onewire" name="unnamed" />
  </Project>
  <Register1>
-  <RegisterWindow openNodes="" binaryNodes="" unsignedNodes="" visibleGroups="" decimalNodes="" octalNodes="" asciiNodes="" />
+  <RegisterWindow openNodes="GPIO" binaryNodes="GPIO/IO0PIN;GPIO/IO0SET;GPIO/IO0DIR;GPIO/IO0CLR" unsignedNodes="" visibleGroups="GPIO" decimalNodes="" octalNodes="" asciiNodes="" />
  </Register1>
  <Register2>
   <RegisterWindow openNodes="" binaryNodes="" unsignedNodes="" visibleGroups="" decimalNodes="" octalNodes="" asciiNodes="" />
@@ -53,5 +55,5 @@
   <Watches active="0" update="Never" />
  </Watch4>
  <Files/>
- <ARMCrossStudioWindow activeProject="collector" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\wsan" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
+ <ARMCrossStudioWindow activeProject="temp" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-lpc2100" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc" autoConnectCapabilities="1151" debugSearchPath="" buildConfiguration="ARM RAM Debug" />
 </session>

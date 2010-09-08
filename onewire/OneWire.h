@@ -1,7 +1,15 @@
 #ifndef OneWire_h
 #define OneWire_h
 
-#include <inttypes.h>
+#if defined(_LPC2100)
+	#include <stdint.h>
+	extern "C"
+	{
+		#include "compat.h"
+	}
+#else
+	#include <inttypes.h>
+#endif
 
 // you can exclude onewire_search by defining that to 0
 #ifndef ONEWIRE_SEARCH
@@ -32,8 +40,13 @@
 class OneWire
 {
   private:
+#if defined(_LPC2100)
+		uint32_t bitmask;
+		unsigned long baseReg;
+#else
     uint8_t bitmask;
     volatile uint8_t *baseReg;
+#endif
 
 #if ONEWIRE_SEARCH
     // global search state

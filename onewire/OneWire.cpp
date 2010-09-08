@@ -78,31 +78,50 @@ sample code bearing this copyright.
 //--------------------------------------------------------------------------
 */
 
-#include "OneWire.h"
-#include "pins_arduino.h"
+#if defined(_LPC2100)
+	#include <targets/LPC21xx.h>
+#else
+	#include "pins_arduino.h"
 
-extern "C" {
-#include "WConstants.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <avr/pgmspace.h>
-}
+	extern "C" {
+	#include "WConstants.h"
+	#include <avr/io.h>
+	#include <avr/interrupt.h>
+	#include <avr/pgmspace.h>
+	}
+#endif
+
+#include "OneWire.h"
 
 OneWire::OneWire(uint8_t pin)
 {
-	bitmask =  digitalPinToBitMask(pin);
+#if defined(_LPC2100)
+	bitmask = 1 << pin;
+	baseReg = GPIO_BASE;
+#else
+	bitmask =	digitalPinToBitMask(pin);
 	baseReg = portInputRegister(digitalPinToPort(pin));
+#endif
+
 #if ONEWIRE_SEARCH
 	reset_search();
 #endif
 }
 
 
-#define DIRECT_READ(base, mask)		(((*(base)) & (mask)) ? 1 : 0)
-#define DIRECT_MODE_INPUT(base, mask)	((*(base+1)) &= ~(mask))
-#define DIRECT_MODE_OUTPUT(base, mask)	((*(base+1)) |= (mask))
-#define DIRECT_WRITE_LOW(base, mask)	((*(base+2)) &= ~(mask))
-#define DIRECT_WRITE_HIGH(base, mask)	((*(base+2)) |= (mask))
+#if defined(_LPC2100)
+	#define DIRECT_READ(base, mask)		(*((volatile unsigned long *)(base)) & (mask) ? 1 : 0)
+	#define DIRECT_MODE_INPUT(base, mask)	(*((volatile unsigned long *)(base + 0x8)) &= ~(mask))
+	#define DIRECT_MODE_OUTPUT(base, mask)	(*((volatile unsigned long *)(base + 0x8)) |= (mask))
+	#define DIRECT_WRITE_LOW(base, mask)	(*((volatile unsigned long *)(base + 0xC)) = (mask))
+	#define DIRECT_WRITE_HIGH(base, mask)	(*((volatile unsigned long *)(base + 0x4)) = (mask))
+#else
+	#define DIRECT_READ(base, mask)		(((*(base)) & (mask)) ? 1 : 0)
+	#define DIRECT_MODE_INPUT(base, mask)	((*(base+1)) &= ~(mask))
+	#define DIRECT_MODE_OUTPUT(base, mask)	((*(base+1)) |= (mask))
+	#define DIRECT_WRITE_LOW(base, mask)	((*(base+2)) &= ~(mask))
+	#define DIRECT_WRITE_HIGH(base, mask)	((*(base+2)) |= (mask))
+#endif
 
 
 // Perform the onewire reset function.  We will wait up to 250uS for
@@ -113,8 +132,13 @@ OneWire::OneWire(uint8_t pin)
 //
 uint8_t OneWire::reset(void)
 {
+#if defined(_LPC2100)
+	uint32_t mask=bitmask;
+	unsigned long reg = baseReg;
+#else
 	uint8_t mask=bitmask;
 	volatile uint8_t *reg asm("r30") = baseReg;
+#endif
 	uint8_t r;
 	uint8_t retries = 125;
 
@@ -147,8 +171,13 @@ uint8_t OneWire::reset(void)
 //
 void OneWire::write_bit(uint8_t v)
 {
+#if defined(_LPC2100)
+	uint32_t mask=bitmask;
+	unsigned long reg = baseReg;
+#else
 	uint8_t mask=bitmask;
 	volatile uint8_t *reg asm("r30") = baseReg;
+#endif
 
 	if (v & 1) {
 		cli();
@@ -175,8 +204,13 @@ void OneWire::write_bit(uint8_t v)
 //
 uint8_t OneWire::read_bit(void)
 {
+#if defined(_LPC2100)
+	uint32_t mask=bitmask;
+	unsigned long reg = baseReg;
+#else
 	uint8_t mask=bitmask;
 	volatile uint8_t *reg asm("r30") = baseReg;
+#endif
 	uint8_t r;
 
 	cli();
@@ -184,7 +218,11 @@ uint8_t OneWire::read_bit(void)
 	DIRECT_WRITE_LOW(reg, mask);
 	delayMicroseconds(3);
 	DIRECT_MODE_INPUT(reg, mask);	// let pin float, pull up will raise
+#if defined(_LPC2100)
+	delayMicroseconds(6);
+#else
 	delayMicroseconds(9);
+#endif
 	r = DIRECT_READ(reg, mask);
 	sei();
 	delayMicroseconds(53);
@@ -456,7 +494,7 @@ uint8_t OneWire::crc8( uint8_t *addr, uint8_t len)
 uint8_t OneWire::crc8( uint8_t *addr, uint8_t len)
 {
 	uint8_t crc = 0;
-	
+
 	while (len--) {
 		uint8_t inbyte = *addr++;
 		for (uint8_t i = 8; i; i--) {
