@@ -17,13 +17,13 @@ int main (void)
 
 	char txt[MAX_TXT_SIZE];
 
-	OneWire ds(30);
+	OneWire ow(30);
 	uint8_t addr[8];
 
 	uint8_t retries = 10;
 
 	while (true)
-		if (ds.search(addr))
+		if (ow.search(addr))
 			break;
 		else if (--retries == 0)
 		{
@@ -46,18 +46,18 @@ int main (void)
 
 	while (true)
 	{
-		ds.reset();
-		ds.select(addr);
-		ds.write(0x44, 1);
+		ow.reset();
+		ow.select(addr);
+		ow.write(0x44, 1);
 
 		delay(100);
 
-		ds.reset();
-		ds.select(addr);
-		ds.write(0xBE);
+		ow.reset();
+		ow.select(addr);
+		ow.write(0xBE);
 
 		for (i = 0; i < 9; ++i)
-			data[i] = ds.read();
+			data[i] = ow.read();
 
 		temp = (data[1] << 8) + data[0];
 		sign = temp & 0x8000;

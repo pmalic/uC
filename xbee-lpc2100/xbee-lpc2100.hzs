@@ -19,8 +19,8 @@
  </Memory4>
  <Project>
   <ProjectSessionItem path="xbee-lpc2100" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;sensor" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;sensor;Source Files" name="unnamed" />
  </Project>
  <Register1>
   <RegisterWindow openNodes="GPIO" binaryNodes="GPIO/IO0PIN;GPIO/IO0SET;GPIO/IO0DIR;GPIO/IO0CLR" unsignedNodes="" visibleGroups="GPIO" decimalNodes="" octalNodes="" asciiNodes="" />
@@ -51,5 +51,5 @@
   <Watches active="0" update="Never" />
  </Watch4>
  <Files/>
- <ARMCrossStudioWindow activeProject="collector" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-lpc2100" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
+ <ARMCrossStudioWindow activeProject="sensor" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\onewire" fileDialogDefaultFilter="*.h" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
 </session>

@@ -92,14 +92,6 @@
     <configuration Name="Flash" Placement="Flash" arm_target_flash_loader_file_path="$(PackagesDir)/targets/Philips_LPC210X/Release/Loader_rpc.elf" arm_target_flash_loader_type="LIBMEM RPC Loader" linker_section_placement_file="$(StudioDir)/targets/flash_placement.xml" target_reset_script="FLASHReset()"/>
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc"/>
-      <folder Name="ks0108">
-        <file file_name="../ks0108/KS0108-LPC.c"/>
-        <file file_name="../ks0108/font5x8.h"/>
-        <file file_name="../ks0108/graphic.c"/>
-        <file file_name="../ks0108/graphic.h"/>
-        <file file_name="../ks0108/KS0108.c"/>
-        <file file_name="../ks0108/KS0108.h"/>
-      </folder>
       <folder Name="xbee">
         <file file_name="../xbee/XBee.h"/>
         <file file_name="../xbee/Platform.h"/>
@@ -109,6 +101,7 @@
       <folder Name="onewire">
         <file file_name="../onewire/OneWire.h"/>
         <file file_name="../onewire/OneWire.cpp"/>
+        <file file_name="../onewire/compat.h"/>
       </folder>
     </folder>
     <folder Name="System Files">

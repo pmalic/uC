@@ -3,7 +3,6 @@
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
-
 #include "xbee/XBee.h"
 #include "wsan/DiscoverMsg.h"
 #include "wsan/OfferMsg.h"
@@ -76,7 +75,7 @@ int main (int argc, char* argv[])
 
 		readDiscovery(xbee, offers);
 
-		cerr << "Received offers:" << endl;
+		cerr << ">>> RECEIVED OFFERS <<<" << endl;
 
 		for (vector<OfferMsg>::const_iterator it = offers.begin(), it_end = offers.end(); it != it_end; ++it)
 		{
@@ -88,8 +87,10 @@ int main (int argc, char* argv[])
 			while (decimals--)
 				factor *= 10;
 
-			cerr << msg.header.node_name << ":" << (msg.header.desc & 0x1 ? '-' : '+') <<	(msg.header.val / factor) << '.' << (msg.header.val % factor) << " C" << endl;
+			cerr << msg.header.node_name << ":" << (msg.header.desc & 0x1 ? '-' : '+') <<	(msg.header.val / factor) << '.' << (msg.header.val % factor) << "C ";
 		}
+
+		cerr << endl << endl;
 
 		offers.clear();
 	}
