@@ -19,12 +19,12 @@
 #define KS0108_CTRL_SET		IO0SET
 #define KS0108_CTRL_CLR		IO0CLR
 
-#define KS0108_RS			(1 << 17)
-#define KS0108_RW			(1 << 16)
-#define KS0108_EN			(1 << 19)
+#define KS0108_RS			(1 << 17) // D4
+#define KS0108_RW			(1 << 16) // C5
+#define KS0108_EN			(1 << 19) // C2
 
-#define KS0108_CS1			(1 << 15)
-#define KS0108_CS2			(1 << 18)
+#define KS0108_CS1			(1 << 15) // D5
+#define KS0108_CS2			(1 << 18) // D2
 #define KS0108_CS3			(1 << 31)
 
 #define DISPLAY_STATUS_BUSY	0x80
