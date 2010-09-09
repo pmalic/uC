@@ -17,6 +17,7 @@ public:
 		Msg::Header common;
 		uint8_t msg_type;
 		char node_name[16];
+		uint8_t desc;
 		uint32_t val;
 	} __attribute__((packed)) Header;
 

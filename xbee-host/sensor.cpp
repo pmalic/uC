@@ -3,6 +3,7 @@
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
+#include <boost/random.hpp>
 
 #include "xbee/XBee.h"
 #include "wsan/DiscoverMsg.h"
@@ -11,12 +12,23 @@
 using namespace std;
 using namespace wsan;
 
+void genRandom (OfferMsg& msg)
+{
+	boost::mt19937 seed(time(0));
+	boost::uniform_int<> bounds(0, 10000);
+	boost::variate_generator<boost::mt19937, boost::uniform_int<> > rng(seed, bounds);
+
+	msg.header.val = rng();
+	msg.header.desc += msg.header.val & 0x1;
+}
+
 void sendOffer (XBee &xbee, XBeeAddress64& addr)
 {
 	cerr << "Sending offer msg to " << hex << addr.getMsb() << ":" << addr.getLsb() << "..." << endl;
 
 	OfferMsg msg("PM2");
-	msg.header.val = 2550;
+	msg.header.desc = 2 << 1;
+	genRandom(msg);
 
 	ZBTxRequest tx = ZBTxRequest(addr, msg.getFrame(), msg.getFrameLen());
 

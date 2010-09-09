@@ -19,12 +19,8 @@
  </Memory4>
  <Project>
   <ProjectSessionItem path="xbee-lpc2100" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;at" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;at;System Files" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;temp" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files;ks0108" name="unnamed" />
-  <ProjectSessionItem path="xbee-lpc2100;temp;Source Files;onewire" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector" name="unnamed" />
+  <ProjectSessionItem path="xbee-lpc2100;collector;Source Files" name="unnamed" />
  </Project>
  <Register1>
   <RegisterWindow openNodes="GPIO" binaryNodes="GPIO/IO0PIN;GPIO/IO0SET;GPIO/IO0DIR;GPIO/IO0CLR" unsignedNodes="" visibleGroups="GPIO" decimalNodes="" octalNodes="" asciiNodes="" />
@@ -55,5 +51,5 @@
   <Watches active="0" update="Never" />
  </Watch4>
  <Files/>
- <ARMCrossStudioWindow activeProject="temp" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-lpc2100" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc" autoConnectCapabilities="1151" debugSearchPath="" buildConfiguration="ARM RAM Debug" />
+ <ARMCrossStudioWindow activeProject="collector" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-lpc2100" fileDialogDefaultFilter="*.cpp;*.cxx;*.cc" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
 </session>

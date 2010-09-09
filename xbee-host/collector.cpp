@@ -81,7 +81,14 @@ int main (int argc, char* argv[])
 		for (vector<OfferMsg>::const_iterator it = offers.begin(), it_end = offers.end(); it != it_end; ++it)
 		{
 			const OfferMsg& msg = *it;
-			cerr << msg.header.node_name << ": " << (msg.header.val / 100.0) << " C" << endl;
+
+			unsigned int decimals = msg.header.desc >> 1;
+			unsigned int factor = 1;
+
+			while (decimals--)
+				factor *= 10;
+
+			cerr << msg.header.node_name << ":" << (msg.header.desc & 0x1 ? '-' : '+') <<	(msg.header.val / factor) << '.' << (msg.header.val % factor) << " C" << endl;
 		}
 
 		offers.clear();

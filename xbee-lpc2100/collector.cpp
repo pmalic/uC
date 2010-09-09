@@ -85,7 +85,13 @@ int main (void)
 
 			const OfferMsg& msg = *it;
 
-			snprintf(txt, MAX_TXT_SIZE, "%s:%.2f", msg.header.node_name, (msg.header.val / 100.0));
+			unsigned int decimals = msg.header.desc >> 1;
+			unsigned int factor = 1;
+
+			while (decimals--)
+				factor *= 10;
+
+			snprintf(txt, MAX_TXT_SIZE, "%s:%c%02d.%02d", msg.header.node_name, (msg.header.desc & 0x1 ? '-' : '+'), msg.header.val / factor, msg.header.val % factor);
 			GLCD_WriteString(txt);
 		}
 

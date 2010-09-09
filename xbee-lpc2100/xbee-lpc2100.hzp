@@ -48,7 +48,7 @@
   <configuration Name="ARM Flash Release" arm_endian="Little" c_preprocessor_definitions="STARTUP_FROM_RESET" inherited_configurations="ARM;Flash;Release"/>
   <configuration Name="THUMB Flash Debug" inherited_configurations="THUMB;Flash;Debug"/>
   <configuration Name="THUMB Flash Release" inherited_configurations="THUMB;Flash;Release"/>
-  <configuration Name="Common" arm_endian="Little" c_preprocessor_definitions="_LPC2100" c_user_include_directories="$(StudioDir)/include/stlport;.." linker_printf_fp_enabled="Yes"/>
+  <configuration Name="Common" arm_endian="Little" c_preprocessor_definitions="_LPC2100" c_user_include_directories="$(StudioDir)/include/stlport;.." linker_printf_fp_enabled="No"/>
   <project Name="collector">
     <configuration Name="Common" Target="LPC2148" arm_architecture="v4T" arm_core_type="ARM7TDMI-S" arm_simulator_memory_simulation_filename="$(PackagesDir)/targets/Philips_LPC210X/LPC2000SimulatorMemory.dll" arm_simulator_memory_simulation_parameter="LPC21;0x80000;0x8000" arm_target_debug_interface_type="ARM7TDI" arm_target_loader_parameter="12000000" c_preprocessor_definitions="" c_user_include_directories="" cpp_only_additional_options="" gcc_entry_point="reset_handler" link_include_startup_code="No" linker_additional_files="$(PackagesDir)/lib/liblpc2000$(LibExt)$(LIB)" linker_memory_map_file="$(PackagesDir)/targets/Philips_LPC210X/Philips_LPC2148_MemoryMap.xml" oscillator_frequency="12MHz" project_directory="" project_type="Executable" property_groups_file_path="$(PackagesDir)/targets/Philips_LPC210X/propertyGroups21xx.xml"/>
     <configuration Name="RAM" Placement="RAM" linker_section_placement_file="$(StudioDir)/targets/sram_placement.xml" target_reset_script="SRAMReset()"/>
