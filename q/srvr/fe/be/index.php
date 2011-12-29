@@ -1,15 +1,20 @@
 <?php
 
+function res_list ()
+{
+	print json_encode(array('u' => $_SESSION['users'], 'r' => $_SESSION['res_list']));
+}
+
 function queue ($id)
 {
-	$_SESSION['res_list'][$id]['q'][] = $_SESSION['username'];
+	$_SESSION['res_list'][$id]['q'][] = $_SESSION['user_id'];
 }
 
 function dequeue ($id)
 {
 	$queue = &$_SESSION['res_list'][$id]['q'];
 
-	$pos = array_search($_SESSION['username'], $queue);
+	$pos = array_search($_SESSION['user_id'], $queue);
 
 	if ($pos !== false)
 		array_splice($queue, $pos, 1);
@@ -28,34 +33,46 @@ switch ($_SERVER['QUERY_STRING'])
 			print '401 Unauthorized.';
 			die ();
 		}
-		else if (!isset($_SESSION['username']))
+		else if (!isset($_SESSION['user_id']))
 		{
-			$username = $_SERVER['PHP_AUTH_USER'];
+			$_SESSION['users'] = array(
+			  'u0' => 'mmarkovic'
+			, 'u1' => 'ppetrovic'
+			, 'u2' => 'ssimic'
+			, 'u3' => 'nnikolic'
+			);
 
-			$_SESSION['username'] = $username;
+			$_SESSION['user_cnt'] = 3;
+
+			$users = &$_SESSION['users'];
+			$user_cnt = &$_SESSION['user_cnt'];
+
+			$users['u' . ++$user_cnt] = $_SERVER['PHP_AUTH_USER'];
+
+			$_SESSION['user_id'] = 'u' . $user_cnt;
 
 			$res_list = array();
 
-			for ($i = 1; $i <= 28; ++$i)
+			for ($i = 27; $i >= 0; --$i)
 			{
 				$queue = array();
 
 				if (mt_rand(1, 100) <= 30)
-					array_push($queue, 'mmarkovic');
+					array_push($queue, 'u0');
 
 				if (mt_rand(1, 100) >= 70)
-					array_push($queue, 'ppetrovic');
+					array_push($queue, 'u1');
 
 				if (mt_rand(1, 100) <= 30)
-					array_push($queue, 'ssimic');
+					array_push($queue, 'u2');
 
 				if (mt_rand(1, 100) >= 70)
-					array_push($queue, 'nnikolic');
+					array_push($queue, 'u3');
 
 				$res_list['r' . $i] = array(
 				  'n' => 'ROOM' . $i
 				, 'q' => $queue
-				, 'f' => empty($queue) ? true : mt_rand(1, 100) <= 50
+				, 'f' => empty($queue) ? 1 : (mt_rand(1, 100) <= 50 ? 1 : 0)
 				);
 
 				shuffle($res_list['r' . $i]['q']);
@@ -64,7 +81,7 @@ switch ($_SERVER['QUERY_STRING'])
 			$_SESSION['res_list'] = $res_list;
 		}
 
-		print 'var Q = { username: ' . json_encode($_SESSION['username']) . ' };';
+		print 'var Q = { user_id: \'' . $_SESSION['user_id'] . '\' };';
 
 		die ();
 		break;
@@ -73,7 +90,7 @@ switch ($_SERVER['QUERY_STRING'])
 
 		session_start();
 
-		print json_encode($_SESSION['res_list']);
+		res_list();
 
 		die ();
 		break;
@@ -84,7 +101,7 @@ switch ($_SERVER['QUERY_STRING'])
 
 		queue(file_get_contents('php://input', FILE_BINARY));
 
-		print json_encode($_SESSION['res_list']);
+		res_list();
 
 		die ();
 		break;
@@ -95,7 +112,7 @@ switch ($_SERVER['QUERY_STRING'])
 
 		dequeue(file_get_contents('php://input', FILE_BINARY));
 
-		print json_encode($_SESSION['res_list']);
+		res_list();
 
 		die ();
 		break;

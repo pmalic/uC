@@ -30,7 +30,7 @@ Q.res_show = function (list)
 		var item = list[id],
 				queue = item.q,
 				qlen = queue.length,
-				qpos = queue.indexOf(Q.username),
+				qpos = queue.indexOf(Q.user_id),
 				flash = false,
 				msg;
 
@@ -61,14 +61,25 @@ Q.res_show = function (list)
 		res.push('">', item.n);
 
 		if (!item.f)
-			res.push(' - ', queue[0]);
+			res.push(' - ', Q.user_map[queue[0]]);
 
 		res.push('<br />');
 
 		res.push('<div id="res_', item.i, '_msg" class="res_msg">', msg, '</div>');
 
-		if (qlen - (item.f ? 0 : 1))
-			res.push('<div id="res_', item.i, '_queue" class="res_queue">', queue.slice(item.f ? 0 : 1).join(', '), '</div>');
+		var qstart = item.f ? 0 : 1;
+
+		if (qlen - qstart)
+		{
+			res.push('<div id="res_', item.i, '_queue" class="res_queue">');
+
+			res.push(Q.user_map[queue[qstart]]);
+
+			for (var i = qstart + 1; i < qlen; ++i)
+				res.push(', ', Q.user_map[queue[i]]);
+
+			res.push('</div>');
+		}
 
 		res.push('</div>');
 
@@ -79,14 +90,17 @@ Q.res_show = function (list)
 
 		res.click({ qpos: qpos, id: id }, function (ev)
 		{
+			clearTimeout(Q.refresh_tid);
+
 			$.ajax({
 			  url: ev.data.qpos != -1 ? '/be/?dequeue' : '/be/?queue'
 			, type: 'POST'
 			, data: ev.data.id
 			, dataType: 'json'
-			, success: function (list)
+			, success: function (data)
 				{
-					Q.res_show(list);
+					Q.user_map = data.u;
+					Q.res_show(data.r);
 				}
 			});
 		});
@@ -95,19 +109,21 @@ Q.res_show = function (list)
 
 		res_cntnr.append(res);
 	}
+
+	Q.refresh_tid = setTimeout(Q.refresh, 3000);
 };
 
-Q.run = function ()
+Q.refresh = function ()
 {
 	$.ajax({
 	  url: '/be/?list'
 	, dataType: 'json'
-	, success: function (list)
+	, success: function (data)
 		{
-			Q.res_show(list);
+			Q.user_map = data.u;
+			Q.res_show(data.r);
 		}
 	});
-
 };
 
-setInterval(Q.flash, 200);
+setInterval(Q.flash, 300);
