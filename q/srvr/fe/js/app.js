@@ -93,7 +93,7 @@ Q.res_show = function (list)
 			clearTimeout(Q.refresh_tid);
 
 			$.ajax({
-			  url: ev.data.qpos != -1 ? '/be/?dequeue' : '/be/?queue'
+			  url: ev.data.qpos != -1 ? '/be/dequeue' : '/be/queue'
 			, type: 'POST'
 			, data: ev.data.id
 			, dataType: 'json'
@@ -116,7 +116,8 @@ Q.res_show = function (list)
 Q.refresh = function ()
 {
 	$.ajax({
-	  url: '/be/?list'
+	  url: '/be/list'
+	, type: 'GET'
 	, dataType: 'json'
 	, success: function (data)
 		{

@@ -20,7 +20,7 @@ function dequeue ($id)
 		array_splice($queue, $pos, 1);
 }
 
-switch ($_SERVER['QUERY_STRING'])
+switch (basename($_SERVER['SCRIPT_URL']))
 {
 	case 'login':
 
