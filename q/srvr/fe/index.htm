@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Q Server</title>
+	<style type="text/css">
+
+	body
+	{
+		background-color: #e0e0e0;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 12px;
+		font-weight: bold;
+	}
+
+	div.res
+	{
+		position: relative;
+		float: left;
+		margin: 5px;
+		padding: 2px;
+		width: 200px;
+		height: 100px;
+		background-color: #d0d0d0;
+		border: 1px solid #000000;
+		box-shadow: 1px 1px 0px #000000;
+		text-align: left;
+	}
+
+	div.res_free
+	{
+		background-color: #88ff88;
+	}
+
+	div.res_occu
+	{
+		background-color: #ff8888;
+	}
+
+	div.res_curr
+	{
+		background-color: #ffff88;
+	}
+
+	span.res_curr
+	{
+		background-color: #ffff88;
+	}
+
+	div.res_msg
+	{
+		margin-top: 5px;
+		padding: 4px;
+		text-align: center;
+		font-size: 12px;
+	}
+
+	div.res_queue
+	{
+		position: absolute;
+		width: 100%;
+		bottom: 0px;
+		padding: 2px;
+		text-align: left;
+		vertical-align: bottom;
+		font-size: 10px;
+	}
+
+	</style>
+	<script type="text/javascript" src="/be/login"></script>
+</head>
+
+<body onload="Q.refresh();">
+
+	<div id="res_cntnr"></div>
+
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript">
+
+	if (typeof Q != 'object')
+		var Q = {};
+
+	Q.flash_map = {};
+	Q.flash_flag = false;
+
+	Q.flash = function ()
+	{
+		var map = Q.flash_map;
+
+		if (Q.flash_flag)
+			for (var id in map)
+				map[id].css('backgroundColor', '');
+		else
+			for (var id in map)
+				map[id].css('backgroundColor', '#ffff88');
+
+		Q.flash_flag = !Q.flash_flag;
+	};
+
+	Q.res_show = function (list)
+	{
+		var res_cntnr = $('#res_cntnr');
+
+		res_cntnr.empty()
+		Q.flash_map = {};
+
+		for (var id in list)
+		{
+			var item = list[id],
+					queue = item.q,
+					qlen = queue.length,
+					qpos = queue.indexOf(Q.user_id),
+					flash = false,
+					msg;
+
+			var res = [ '<div id="res_', item.i, '" class="res res_' ];
+
+			if (!qlen)
+			{
+				res.push('free');
+				msg = '';
+			}
+			else if (qpos != 0)
+			{
+				res.push('occu');
+				msg = qpos != -1 ? '<span class="res_curr">&nbsp;&nbsp;<blink>WAITING ('.concat(qpos, ')</blink>&nbsp;&nbsp;</span>') : '';
+			}
+			else if (item.f)
+			{
+				res.push('free');
+				msg = 'GO!!!';
+				flash = true;
+			}
+			else
+			{
+				res.push('curr');
+				msg = '';
+			}
+
+			res.push('">', item.n);
+
+			if (!item.f)
+				res.push(' - ', Q.user_map[queue[0]]);
+
+			res.push('<br />');
+
+			res.push('<div id="res_', item.i, '_msg" class="res_msg">', msg, '</div>');
+
+			var qstart = item.f ? 0 : 1;
+
+			if (qlen - qstart)
+			{
+				res.push('<div id="res_', item.i, '_queue" class="res_queue">');
+
+				res.push(Q.user_map[queue[qstart]]);
+
+				for (var i = qstart + 1; i < qlen; ++i)
+					res.push(', ', Q.user_map[queue[i]]);
+
+				res.push('</div>');
+			}
+
+			res.push('</div>');
+
+			res = $(res.join(''));
+
+			if (flash)
+				Q.flash_map[id] = res;
+
+			res.click({ qpos: qpos, id: id }, function (ev)
+			{
+				clearTimeout(Q.refresh_tid);
+
+				$.ajax({
+				  url: ev.data.qpos != -1 ? '/be/dequeue' : '/be/queue'
+				, type: 'POST'
+				, data: ev.data.id
+				, dataType: 'json'
+				, success: function (data)
+					{
+						Q.user_map = data.u;
+						Q.res_show(data.r);
+					}
+				});
+			});
+
+			res.hover(function () { $(this).css('cursor', 'pointer'); }, function () { $(this).css('cursor', ''); });
+
+			res_cntnr.append(res);
+		}
+
+		Q.refresh_tid = setTimeout(Q.refresh, 3000);
+	};
+
+	Q.refresh = function ()
+	{
+		$.ajax({
+		  url: '/be/list'
+		, type: 'GET'
+		, dataType: 'json'
+		, success: function (data)
+			{
+				Q.user_map = data.u;
+				Q.res_show(data.r);
+			}
+		});
+	};
+
+	setInterval(Q.flash, 300);
+
+	</script>
+</body>
+
+</html>
