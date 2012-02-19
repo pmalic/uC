@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010 Predrag Malicevic. All rights reserved.
+ * Copyright (c) 2012 Predrag Malicevic. All rights reserved.
  *
  * This file is part of XBee-Arduino.
  *
@@ -22,6 +22,7 @@
 
 #if defined(__ARMCC_VERSION)
 	#include <mbed.h>
+	#include <MODSERIAL.h>
 #elif defined(_LPC2100)
 	#include <cstddef>
 	#include <stdint.h>
@@ -136,7 +137,7 @@ public:
 	private:
 		SerialPortConf _conf;
 #if defined(__ARMCC_VERSION)
-		Serial _port;
+		MODSERIAL _port;
 #elif defined(_LPC2100)
 		// nothing
 #elif defined(_BOOST)
@@ -198,7 +199,7 @@ public:
 	public:
 #if defined(__ARMCC_VERSION)
 		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _port(Serial(conf.tx, conf.rx))
+		: _conf(conf), _port(MODSERIAL(conf.tx, conf.rx))
 		{
 		}
 #elif defined(_LPC2100)

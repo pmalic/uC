@@ -65,7 +65,11 @@ int main (int argc, char* argv[])
 
 		usleep(100);
 
-		sendOffer(xbee, rx.getRemoteAddress64());
+		while (true)
+		{
+			sendOffer(xbee, rx.getRemoteAddress64());
+			usleep(100);
+		}
 	}
 
 	return 0;
