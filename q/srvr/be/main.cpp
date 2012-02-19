@@ -13,37 +13,39 @@ DigitalOut led1(LED1, "led1");
 
 #define PORT 80
 
-//SDFileSystem sd(p5, p6, p7, p8, "sd");
-LocalFileSystem fs("local");
+SDFileSystem sd(p5, p6, p7, p8, "sd");
+//LocalFileSystem fs("local");
 
 EthernetNetIf eth;
 HTTPServer srv;
 
 using namespace wsan;
 
-int main () {
+int main ()
+{
     printf("\r\nSetting up...\r\n");
     EthernetErr ethErr = eth.setup();
 
-    if (ethErr) {
+    if (ethErr)
+		{
         printf("Error %d in setup.\r\n", ethErr);
         return -1;
     }
 
-//    FILE *fp = fopen("/sd/htpasswd", "rt");
+    FILE *fp = fopen("/sd/htpasswd", "rt");
     
-//    char user[32], pass[33], code[64];
+    char user[32], pass[33], code[64];
     
-//    fscanf(fp, "%s:%s:%s\n", user, pass, code);
+    fscanf(fp, "%s:%s:%s\n", user, pass, code);
     
-//    printf("read %s %s %s\r\n", user, pass, code);
+    printf("read %s %s %s\r\n", user, pass, code);
     
-//    fclose(fp);
+    fclose(fp);
     
     printf("\r\nSetup OK\r\n");
 
-    FSHandler::mount("/local", "/");
-//    FSHandler::mount("/sd/fe", "/");
+    FSHandler::mount("/sd/fe", "/");
+//    FSHandler::mount("/local", "/");
 
     srv.addHandler<FSHandler>("/");
 
