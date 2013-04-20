@@ -61,6 +61,8 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopU1X>0</nStopU1X>
+            <nStopU2X>0</nStopU2X>
           </BeforeCompile>
           <BeforeMake>
             <RunUserProg1>0</RunUserProg1>
@@ -134,6 +136,7 @@
             <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
             <RestoreFunctions>0</RestoreFunctions>
             <RestoreToolbox>1</RestoreToolbox>
+            <RestoreTracepoints>0</RestoreTracepoints>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>1</TargetSelection>
@@ -342,11 +345,12 @@
             <Rwpi>0</Rwpi>
             <wLevel>0</wLevel>
             <uThumb>0</uThumb>
+            <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
               <Define>TARGET_LPC1768</Define>
               <Undefine></Undefine>
-              <IncludePath>  .\mbed;  .\mbed\LPC1768;  .\mbed\LPC1768\ARM;  </IncludePath>
+              <IncludePath>  .\mbed;  .\mbed\LPC1768;  .\mbed\LPC1768\ARM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -357,6 +361,7 @@
             <SplitLS>0</SplitLS>
             <SwStkChk>0</SwStkChk>
             <NoWarn>0</NoWarn>
+            <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -433,6 +438,7 @@
                 <Rwpi>2</Rwpi>
                 <wLevel>0</wLevel>
                 <uThumb>2</uThumb>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -448,6 +454,7 @@
                 <SplitLS>2</SplitLS>
                 <SwStkChk>2</SwStkChk>
                 <NoWarn>2</NoWarn>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -567,6 +574,7 @@
                 <Rwpi>2</Rwpi>
                 <wLevel>0</wLevel>
                 <uThumb>2</uThumb>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -582,6 +590,7 @@
                 <SplitLS>2</SplitLS>
                 <SwStkChk>2</SwStkChk>
                 <NoWarn>2</NoWarn>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -921,6 +930,7 @@
                 <Rwpi>2</Rwpi>
                 <wLevel>0</wLevel>
                 <uThumb>2</uThumb>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -936,6 +946,7 @@
                 <SplitLS>2</SplitLS>
                 <SwStkChk>2</SwStkChk>
                 <NoWarn>2</NoWarn>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -985,6 +996,7 @@
                 <Rwpi>2</Rwpi>
                 <wLevel>0</wLevel>
                 <uThumb>2</uThumb>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -1000,6 +1012,7 @@
                 <SplitLS>2</SplitLS>
                 <SwStkChk>2</SwStkChk>
                 <NoWarn>2</NoWarn>
+                <uSurpInc>2</uSurpInc>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
