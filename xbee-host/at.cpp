@@ -15,14 +15,17 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
-	XBee xbee = XBee(Platform::SerialPortConf(argv[1]));
+	SERIAL serial = SERIAL(argv[1]);
+	XBee xbee = XBee();
 
 	uint8_t cmd[] = { argv[2][0], argv[2][1] };
 
 	AtCommandRequest atRequest = AtCommandRequest(cmd);
 	AtCommandResponse atResponse = AtCommandResponse();
 
-	xbee.begin(115200);
+	serial.begin(115200);
+	xbee.setSerial(serial);
+
 	xbee.send(atRequest);
 
 	if (!xbee.readPacket(5000))
@@ -45,7 +48,7 @@ int main (int argc, char* argv[])
 
 	if (!atResponse.isOk())
 	{
-		cerr << "Command return error code: " << static_cast<unsigned short>(atResponse.getStatus()) << endl;
+		cerr << "Command returned error code: " << static_cast<unsigned short>(atResponse.getStatus()) << endl;
 		return 1;
 	}
 

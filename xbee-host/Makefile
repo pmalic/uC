@@ -1,7 +1,6 @@
-PLATFORM=_BOOST
 CXX=g++
-CXXFLAGS=-D$(PLATFORM) -Wall -pedantic -O3 -I..
-LDFLAGS=-L/opt/local/lib -lboost_system -lboost_thread-mt
+CXXFLAGS=-DBOOST_GCC -Wall -pedantic -O2 -I..
+LDFLAGS=-L/opt/local/lib -lboost_system-mt -lboost_thread-mt
 
 all: at sensor collector
 

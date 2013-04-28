@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 Predrag Malicevic. All rights reserved.
+ * Copyright (c) 2013 Predrag Malicevic. All rights reserved.
  *
  * This file is part of XBee-Arduino.
  *
@@ -20,340 +20,283 @@
 #ifndef PLATFORM_H_
 #define PLATFORM_H_
 
-#if defined(__ARMCC_VERSION)
+#if defined(ARDUINO)
+ 	#if ARDUINO >= 100
+		#include <Arduino.h>
+	#else
+ 		#include <WProgram.h>
+ 	#endif
+	#include <inttypes.h>
+	#include <HardwareSerial.h>
+#elif defined(__ARMCC_VERSION)
 	#include <mbed.h>
 	#include <MODSERIAL.h>
 #elif defined(_LPC2100)
 	#include <cstddef>
 	#include <stdint.h>
 	#include <targets/LPC210x.h>
-#elif defined(_BOOST)
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
 	#include <boost/asio.hpp>
 	#include <boost/bind.hpp>
 	#include <boost/thread.hpp>
 	#include <boost/date_time/posix_time/posix_time.hpp>
-#else
-	#include <inttypes.h>
-	#include <WProgram.h>
-	#include <HardwareSerial.h>
 #endif
 
-class Platform
+class Stopwatch
+{
+private:
+#if defined(ARDUINO)
+	unsigned long _start;
+#elif defined(__ARMCC_VERSION)
+	Timer _timer;
+#elif defined(_LPC2100)
+	// nothing
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+	boost::posix_time::ptime _start;
+#endif
+
+public:
+	Stopwatch ()
+	{
+#if defined(ARDUINO)
+		_start = millis();
+#elif defined(__ARMCC_VERSION)
+		_timer.start();
+#elif defined(_LPC2100)
+		T0PR = 58982 / VPBDIV - 1; // prescale divider
+		T0TCR = 3; // reset counter
+		T0IR = 0xff; // clear interrupts
+		T0TCR = 1; // start counting
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		_start = boost::posix_time::microsec_clock::universal_time();
+#endif
+	}
+
+	~Stopwatch ()
+	{
+#if defined(__ARMCC_VERSION)
+		_timer.stop();
+#elif defined(_LPC2100)
+		T0TCR = 2;
+#endif
+	}
+
+	unsigned long read ()
+	{
+#if defined(ARDUINO)
+		return millis() - _start;
+#elif defined(__ARMCC_VERSION)
+		return _timer.read_ms();
+#elif defined(_LPC2100)
+		return T0TC;
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		using namespace boost::posix_time;
+
+		const time_duration diff = ptime(microsec_clock::universal_time()) - _start;
+
+		return static_cast<unsigned long>(diff.total_milliseconds());
+#endif
+	}
+};
+
+#if defined(ARDUINO)
+	#define STREAM Stream
+#else
+class STREAM
 {
 public:
-	class Stopwatch
-	{
-	private:
-#if defined(__ARMCC_VERSION)
-		Timer _timer;
-#elif defined(_LPC2100)
-		// nothing
-#elif defined(_BOOST)
-		boost::posix_time::ptime _start;
-#else
-		unsigned long _start;
-#endif
+	virtual ~STREAM () {}
 
-	public:
-		Stopwatch ()
-		{
-#if defined(__ARMCC_VERSION)
-			_timer.start();
-#elif defined(_LPC2100)
-		  T0PR = 58982 / VPBDIV - 1; // prescale divider
-		  T0TCR = 3; // reset counter
-		  T0IR = 0xff; // clear interrupts
-		  T0TCR = 1; // start counting
-#elif defined(_BOOST)
-			_start = boost::posix_time::microsec_clock::universal_time();
-#else
-			_start = millis();
-#endif
-		}
+	virtual int available () = 0;
+	virtual int read () = 0;
+	virtual void flush () = 0;
 
-		~Stopwatch ()
-		{
-#if defined(__ARMCC_VERSION)
-			_timer.stop();
-#elif defined(_LPC2100)
-			T0TCR = 2;
-#endif
-		}
-
-		unsigned long read ()
-		{
-#if defined(__ARMCC_VERSION)
-			return _timer.read_ms();
-#elif defined(_LPC2100)
-			return T0TC;
-#elif defined(_BOOST)
-			using namespace boost::posix_time;
-
-			const time_duration diff = ptime(microsec_clock::universal_time()) - _start;
-
-			return static_cast<unsigned long>(diff.total_milliseconds());
-#else
-			return millis() - _start;
-#endif
-		}
-	};
-
-	class SerialPortConf
-	{
-	public:
-#if defined(__ARMCC_VERSION)
-		const PinName tx, rx;
-
-		SerialPortConf (const PinName& tx = p28, const PinName& rx = p27)
-		: tx(tx), rx(rx)
-		{
-		}
-#elif defined(_LPC2100)
-		const unsigned short number;
-
-		SerialPortConf (const unsigned short number = 1)
-		: number(number)
-		{
-		}
-#elif defined(_BOOST)
-		const std::string name;
-
-		SerialPortConf (const std::string& name = "/dev/tty.usbserial-A700eX8n")
-		: name(name)
-		{
-		}
-#else
-		const unsigned short number;
-
-		SerialPortConf (const unsigned short number = 1)
-		: number(number)
-		{
-		}
-#endif
-	};
-
-	class SerialPort
-	{
-	private:
-		SerialPortConf _conf;
-#if defined(__ARMCC_VERSION)
-		MODSERIAL _port;
-#elif defined(_LPC2100)
-		// nothing
-#elif defined(_BOOST)
-		boost::asio::io_service _io;
-		boost::asio::serial_port _port;
-
-		boost::thread _rdthr;
-		char _rdbuf[128];
-
-		boost::mutex _rdmtx;
-		std::vector<char> _rdque;
-
-		void _start ()
-		{
-			using namespace boost;
-
-			_io.post(bind(&SerialPort::_read, this));
-
-			thread t(bind(&asio::io_service::run, &_io));
-
-			_rdthr.swap(t);
-		}
-
-		void _read ()
-		{
-			using namespace boost;
-
-			_port.async_read_some(asio::buffer(_rdbuf, 128), bind(&SerialPort::_read_done, this, asio::placeholders::error, asio::placeholders::bytes_transferred));
-		}
-
-		void _read_done (const boost::system::error_code& error, size_t bytes_transferred)
-		{
-			using namespace boost;
-
-			if (error)
-				this_thread::sleep(posix_time::milliseconds(10));
-			else
-			{
-				lock_guard<mutex> lck(_rdmtx);
-
-				_rdque.insert(_rdque.end(), _rdbuf, _rdbuf + bytes_transferred);
-			}
-
-			if (_port.is_open())
-				_read();
-		}
-
-		void _close ()
-		{
-			if (_port.is_open())
-				_port.close();
-
-			_io.reset();
-		}
-#else
-		HardwareSerial _port;
-#endif
-
-	public:
-#if defined(__ARMCC_VERSION)
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _port(MODSERIAL(conf.tx, conf.rx))
-		{
-		}
-#elif defined(_LPC2100)
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf)
-		{
-		}
-#elif defined(_BOOST)
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _io(), _port(_io, conf.name)
-		{
-			_start();
-		}
-
-		SerialPort (const SerialPort& serialPort)
-		: _conf(serialPort._conf), _io(), _port(_io, serialPort._conf.name)
-		{
-			_start();
-		}
-#else
-		SerialPort (const SerialPortConf& conf)
-		: _conf(conf), _port(Serial)
-		{
-#if defined(USE_MEGA)
-			switch (conf.number)
-			{
-				case 2:
-					_port = Serial2;
-					break;
-
-				case 3:
-					_port = Serial3;
-					break;
-
-				default:
-					_port = Serial1;
-					break;
-			}
-#else
-			_port = Serial;
-#endif
-		}
-#endif
-
-#if defined(_BOOST)
-		~SerialPort ()
-		{
-			_io.post(boost::bind(&SerialPort::_close, this));
-
-			_rdthr.join();
-		}
-#endif
-
-		void begin (long speed)
-		{
-#if defined(__ARMCC_VERSION)
-			_port.baud(speed);
-#elif defined(_LPC2100)
-			unsigned int divider = VPBDIV & 3;
-
-			if (divider == 0)
-				divider = 4;
-
-		  const unsigned int divisor = OSCILLATOR_CLOCK_FREQUENCY * (PLLCON & 1 ? (PLLCFG & 0xF) + 1 : 1) / divider / (16 * speed);
-
-		  PINSEL0 = (1 << 0x12) | (1 << 0x10);
-		  U1LCR = 0x83; // 8 bit, 1 stop bit, no parity, enable DLAB
-		  U1DLL = divisor & 0xff;
-		  U1DLM = (divisor >> 8) & 0xff;
-		  U1LCR &= ~0x80; // disable DLAB
-		  U1FCR = 1;
-#elif defined(_BOOST)
-			_port.set_option(boost::asio::serial_port_base::baud_rate(speed));
-#else
-			_port.begin(speed);
-#endif
-		}
-
-		int readable ()
-		{
-#if defined(__ARMCC_VERSION)
-			return _port.readable();
-#elif defined(_LPC2100)
-			return U1LSR & 0x01;
-#elif defined(_BOOST)
-			boost::lock_guard<boost::mutex> lck(_rdmtx);
-
-			return static_cast<int>(_rdque.size());
-#else
-			return _port.available();
-#endif
-		}
-
-		int read ()
-		{
-#if defined(__ARMCC_VERSION)
-			return _port.getc();
-#elif defined(_LPC2100)
-			while (!(U1LSR & 0x01));
-
-			return static_cast<int>(U1RBR);
-#elif defined(_BOOST)
-			boost::lock_guard<boost::mutex> lck(_rdmtx);
-
-			if (_rdque.empty())
-				return -1;
-
-			char c = _rdque.front();
-
-			_rdque.erase(_rdque.begin());
-
-			return c;
-#else
-			return _port.read();
-#endif
-		}
-
-		void flush ()
-		{
-#if defined(__ARMCC_VERSION)
-			while(_port.readable())
-				_port.getc();
-#elif defined(_LPC2100)
-			// TODO
-#elif defined(_BOOST)
-			boost::lock_guard<boost::mutex> lck(_rdmtx);
-
-			_rdque.clear();
-#else
-			_port.flush();
-#endif
-		}
-
-		int write (int i)
-		{
-#if defined(__ARMCC_VERSION)
-			_port.putc(i);
-#elif defined(_LPC2100)
-			while (!(U1LSR & 0x20));
-
-			U1THR = static_cast<char>(i);
-#elif defined(_BOOST)
-			char c = static_cast<char>(i);
-
-			boost::asio::write(_port, boost::asio::buffer(&c, 1));
-#else
-			_port.print(i, BYTE);
-#endif
-
-			return i;
-		}
-
-	};
-
+	virtual void write (uint8_t) = 0; // from Print
 };
+#endif
+
+#if !defined(ARDUINO)
+class SERIAL : public STREAM
+{
+private:
+#if defined(__ARMCC_VERSION)
+	MODSERIAL _port;
+#elif defined(_LPC2100)
+	const unsigned short _number;
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+	const std::string _name;
+	boost::asio::io_service _io;
+	boost::asio::serial_port _port;
+
+	boost::thread _rdthr;
+	char _rdbuf[128];
+
+	boost::mutex _rdmtx;
+	std::vector<char> _rdque;
+
+	void _start ()
+	{
+		using namespace boost;
+
+		_io.post(bind(&SERIAL::_read, this));
+
+		thread t(bind(&asio::io_service::run, &_io));
+
+		_rdthr.swap(t);
+	}
+
+	void _read ()
+	{
+		using namespace boost;
+
+		_port.async_read_some(asio::buffer(_rdbuf, 128), bind(&SERIAL::_read_done, this, asio::placeholders::error, asio::placeholders::bytes_transferred));
+	}
+
+	void _read_done (const boost::system::error_code& error, size_t bytes_transferred)
+	{
+		using namespace boost;
+
+		if (error)
+			this_thread::sleep(posix_time::milliseconds(10));
+		else
+		{
+			lock_guard<mutex> lck(_rdmtx);
+
+			_rdque.insert(_rdque.end(), _rdbuf, _rdbuf + bytes_transferred);
+		}
+
+		if (_port.is_open())
+			_read();
+	}
+
+	void _close ()
+	{
+		if (_port.is_open())
+			_port.close();
+
+		_io.reset();
+	}
+#endif
+
+public:
+#if defined(__ARMCC_VERSION)
+	SERIAL (const PinName& tx = p28, const PinName& rx = p27)
+	: _port(MODSERIAL(tx, rx))
+	{
+	}
+#elif defined(_LPC2100)
+	SERIAL (const unsigned short number = 1)
+	: _number(number)
+	{
+	}
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+	SERIAL (const std::string& name)
+	: _name(name), _io(), _port(_io, name)
+	{
+		_start();
+	}
+
+	SERIAL (const SERIAL& serial)
+	: _name(serial._name), _io(), _port(_io, serial._name)
+	{
+		_start();
+	}
+
+	~SERIAL ()
+	{
+		_io.post(boost::bind(&SERIAL::_close, this));
+
+		_rdthr.join();
+	}
+#endif
+
+	void begin (long speed)
+	{
+#if defined(__ARMCC_VERSION)
+		_port.baud(speed);
+#elif defined(_LPC2100)
+		unsigned int divider = VPBDIV & 3;
+
+		if (divider == 0)
+			divider = 4;
+
+		const unsigned int divisor = OSCILLATOR_CLOCK_FREQUENCY * (PLLCON & 1 ? (PLLCFG & 0xF) + 1 : 1) / divider / (16 * speed);
+
+		PINSEL0 = (1 << 0x12) | (1 << 0x10);
+		U1LCR = 0x83; // 8 bit, 1 stop bit, no parity, enable DLAB
+		U1DLL = divisor & 0xff;
+		U1DLM = (divisor >> 8) & 0xff;
+		U1LCR &= ~0x80; // disable DLAB
+		U1FCR = 1;
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		_port.set_option(boost::asio::serial_port_base::baud_rate(speed));
+#endif
+	}
+
+	int available ()
+	{
+#if defined(__ARMCC_VERSION)
+		return _port.readable();
+#elif defined(_LPC2100)
+		return U1LSR & 0x01;
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		boost::lock_guard<boost::mutex> lck(_rdmtx);
+
+		return static_cast<int>(_rdque.size());
+#endif
+	}
+
+	int read ()
+	{
+#if defined(__ARMCC_VERSION)
+		return _port.getc();
+#elif defined(_LPC2100)
+		while (!(U1LSR & 0x01));
+
+		return static_cast<int>(U1RBR);
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		boost::lock_guard<boost::mutex> lck(_rdmtx);
+
+		if (_rdque.empty())
+			return -1;
+
+		char c = _rdque.front();
+
+		_rdque.erase(_rdque.begin());
+
+		return c;
+#endif
+	}
+
+	void flush ()
+	{
+#if defined(__ARMCC_VERSION)
+		while(_port.readable())
+			_port.getc();
+#elif defined(_LPC2100)
+		// TODO
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		boost::lock_guard<boost::mutex> lck(_rdmtx);
+
+		_rdque.clear();
+#endif
+	}
+
+	void write (uint8_t i)
+	{
+#if defined(__ARMCC_VERSION)
+		_port.putc(i);
+#elif defined(_LPC2100)
+		while (!(U1LSR & 0x20));
+
+		U1THR = static_cast<char>(i);
+#elif defined(BOOST_GCC) || defined(BOOST_MSVC)
+		char c = static_cast<char>(i);
+
+		boost::asio::write(_port, boost::asio::buffer(&c, 1));
+#endif
+	}
+};
+#endif
 
 #endif /* PLATFORM_H_ */

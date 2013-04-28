@@ -27,7 +27,7 @@ void readDiscovery (XBee& xbee, vector<OfferMsg>& offers)
 {
 	cerr << "Waiting for offer msgs..." << endl;
 
-	Platform::Stopwatch stopwatch;
+	Stopwatch stopwatch;
 
 	while (stopwatch.read() < 3000)
 	{
@@ -63,9 +63,11 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
-	XBee xbee = XBee(Platform::SerialPortConf(argv[1]));
+	SERIAL serial = SERIAL(argv[1]);
+	serial.begin(115200);
 
-	xbee.begin(115200);
+	XBee xbee = XBee();
+	xbee.setSerial(serial);
 
 	vector<OfferMsg> offers;
 
