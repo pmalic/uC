@@ -52,20 +52,30 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
-	cerr << "Command [" << atResponse.getCommand()[0] << atResponse.getCommand()[1] << "] was successful!" << endl;
+	cerr << "Command '" << atResponse.getCommand()[0] << atResponse.getCommand()[1] << "' was successful, ";
 
 	unsigned short valueLen = static_cast<unsigned short>(atResponse.getValueLength());
 
-	if (valueLen)
+	if (!valueLen)
+		cerr << "no return value." << endl;
+	else
 	{
-		cerr << "Command value (length " << valueLen << "):" << endl;
+		cerr << "return value is " << valueLen << " byte(s) long:" << endl;
+
+		uint8_t* value = atResponse.getValue();
 
 		cerr << hex << uppercase;
 
 		for (int i = 0; i < valueLen; ++i)
-			cerr << static_cast<char>(atResponse.getValue()[i]) << " ";
+			cerr << ' ' << setfill('0') << setw(2) << static_cast<unsigned short>(value[i]);
 
-		cerr << dec << nouppercase << endl;
+		cerr << dec << nouppercase << ' ';
+
+		for (int i = 0; i < valueLen; ++i)
+				cerr << (value[1] >= 0x20 && value[i] <= 0x7e ? static_cast<char>(value[i]) : '.');
+
+		cerr << endl;
+
 	}
 
 	return 0;

@@ -17,8 +17,8 @@ void genRandom (OfferMsg& msg)
 	boost::uniform_int<> bounds(0, 10000);
 	boost::variate_generator<boost::mt19937, boost::uniform_int<> > rng(seed, bounds);
 
-	msg.header.val = rng();
-	msg.header.desc += msg.header.val & 0x1;
+	msg.frame.payload.val = rng();
+	msg.frame.payload.desc += msg.frame.payload.val & 0x1;
 }
 
 void sendOffer (XBee &xbee, XBeeAddress64& addr)
@@ -26,10 +26,10 @@ void sendOffer (XBee &xbee, XBeeAddress64& addr)
 	cerr << "Sending offer msg to " << hex << addr.getMsb() << ":" << addr.getLsb() << "..." << endl;
 
 	OfferMsg msg("PM2");
-	msg.header.desc = 2 << 1;
+	msg.frame.payload.desc = 2 << 1;
 	genRandom(msg);
 
-	ZBTxRequest tx = ZBTxRequest(addr, msg.getFrame(), msg.getFrameLen());
+	ZBTxRequest tx = ZBTxRequest(addr, msg.getData(), msg.getDataSize());
 
 	xbee.send(tx);
 }
@@ -60,18 +60,19 @@ int main (int argc, char* argv[])
 
 		xbee.getResponse().getZBRxResponse(rx);
 
-		unsigned short frameLen = static_cast<unsigned short>(rx.getDataLength());
+		const uint8_t data_size = static_cast<unsigned short>(rx.getDataLength());
 
-		if (!frameLen || rx.getData(0) != Msg::PREAMBLE || rx.getData(1) != DiscoverMsg::MSG_TYPE)
+		if (data_size < 5)
+			continue;
+
+		uint8_t* data = rx.getData();
+
+		if (!Msg::isPreambleOk(data) || data[4] != DiscoverMsg::MSG_TYPE)
 			continue;
 
 		usleep(100);
 
-		while (true)
-		{
-			sendOffer(xbee, rx.getRemoteAddress64());
-			usleep(100);
-		}
+		sendOffer(xbee, rx.getRemoteAddress64());
 	}
 
 	return 0;

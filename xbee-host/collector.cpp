@@ -18,7 +18,7 @@ void sendDiscovery (XBee& xbee)
 
 	DiscoverMsg msg;
 
-	ZBTxRequest tx = ZBTxRequest(addr, msg.getFrame(), msg.getFrameLen());
+	ZBTxRequest tx = ZBTxRequest(addr, msg.getData(), msg.getDataSize());
 
 	xbee.send(tx);
 }
@@ -41,12 +41,17 @@ void readDiscovery (XBee& xbee, vector<OfferMsg>& offers)
 		ZBRxResponse rx = ZBRxResponse();
 		res.getZBRxResponse(rx);
 
-		uint8_t len = rx.getDataLength();
+		const uint8_t data_size = rx.getDataLength();
 
-		if (!len || rx.getData(0) != Msg::PREAMBLE || rx.getData(1) != OfferMsg::MSG_TYPE)
+		if (data_size < 5)
 			continue;
 
-		OfferMsg msg(rx.getData());
+		uint8_t* data = rx.getData();
+
+		if (!Msg::isPreambleOk(data) || data[4] != OfferMsg::MSG_TYPE)
+			continue;
+
+		OfferMsg msg(data, data_size);
 
 		offers.push_back(msg);
 
@@ -83,13 +88,13 @@ int main (int argc, char* argv[])
 		{
 			const OfferMsg& msg = *it;
 
-			unsigned int decimals = msg.header.desc >> 1;
+			unsigned int decimals = msg.frame.payload.desc >> 1;
 			unsigned int factor = 1;
 
 			while (decimals--)
 				factor *= 10;
 
-			cerr << msg.header.node_name << ":" << (msg.header.desc & 0x1 ? '-' : '+') <<	(msg.header.val / factor) << '.' << (msg.header.val % factor) << "C ";
+			cerr << msg.frame.payload.node_name << ":" << (msg.frame.payload.desc & 0x1 ? '-' : '+') <<	(msg.frame.payload.val / factor) << '.' << (msg.frame.payload.val % factor) << "C ";
 		}
 
 		cerr << endl << endl;

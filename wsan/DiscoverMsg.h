@@ -14,26 +14,24 @@ public:
 
 	typedef struct
 	{
-		Msg::Header common;
-		uint8_t msg_type;
-	} __attribute__((packed)) Header;
+		Header header;
+	} __attribute__((packed)) Frame;
 
-	Header header;
+	Frame frame;
 
 	DiscoverMsg ()
+	: Msg(frame.header, MSG_TYPE)
 	{
-		header.common.preamble = Msg::PREAMBLE;
-		header.msg_type = MSG_TYPE;
 	}
 
-	uint8_t* getFrame ()
+	uint8_t* getData ()
 	{
-		return reinterpret_cast<uint8_t*>(&header);
+		return reinterpret_cast<uint8_t*>(&frame);
 	}
 
-	uint8_t getFrameLen ()
+	uint8_t getDataSize ()
 	{
-		return static_cast<uint8_t>(sizeof header);
+		return static_cast<uint8_t>(sizeof frame);
 	}
 
 };

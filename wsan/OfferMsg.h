@@ -14,38 +14,49 @@ public:
 
 	typedef struct
 	{
-		Msg::Header common;
-		uint8_t msg_type;
 		char node_name[16];
 		uint8_t desc;
 		uint32_t val;
-	} __attribute__((packed)) Header;
+	} __attribute__((packed)) Payload;
 
-	Header header;
+	typedef struct
+	{
+		Header header;
+		Payload payload;
+	} __attribute__((packed)) Frame;
+
+	Frame frame;
 
 	OfferMsg (const char* node_name)
+	: Msg(frame.header, MSG_TYPE)
 	{
-		header.common.preamble = Msg::PREAMBLE;
-		header.msg_type = MSG_TYPE;
-
-		strncpy(header.node_name, node_name, 16);
-		header.node_name[15] = 0;
+		strncpy(frame.payload.node_name, node_name, 16);
+		frame.payload.node_name[15] = 0;
 	}
 
-	OfferMsg (const uint8_t* frame)
+	OfferMsg (const uint8_t* data, const uint8_t data_size)
+	: Msg(frame.header, MSG_TYPE)
 	{
-		memcpy(&header, frame, sizeof header);
+		if (data_size != sizeof frame || !isPreambleOk(data) || data[4] != MSG_TYPE)
+			return;
+
+		const size_t header_size = sizeof frame.header;
+		const size_t payload_size = sizeof frame.payload;
+
+		if (data_size - header_size == payload_size)
+			memcpy(&frame.payload, data + header_size, payload_size);
 	}
 
-	uint8_t* getFrame ()
+	uint8_t* getData ()
 	{
-		return reinterpret_cast<uint8_t*>(&header);
+		return reinterpret_cast<uint8_t*>(&frame);
 	}
 
-	uint8_t getFrameLen ()
+	uint8_t getDataSize ()
 	{
-		return static_cast<uint8_t>(sizeof header);
+		return static_cast<uint8_t>(sizeof frame);
 	}
+
 };
 
 }
