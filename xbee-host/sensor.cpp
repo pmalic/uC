@@ -6,7 +6,7 @@
 #include <boost/random.hpp>
 #include "xbee/XBee.h"
 #include "wsan/DiscoverMsg.h"
-#include "wsan/OfferMsg.h"
+#include "wsan/NumValMsg.h"
 
 using namespace std;
 using namespace wsan;

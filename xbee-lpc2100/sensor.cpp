@@ -2,7 +2,7 @@
 #include "xbee/XBee.h"
 #include "onewire/OneWire.h"
 #include "wsan/DiscoverMsg.h"
-#include "wsan/OfferMsg.h"
+#include "wsan/NumValMsg.h"
 
 extern "C" void __cxa_pure_virtual() { while (1); }
 

@@ -70,7 +70,7 @@
       </folder>
       <file file_name="collector.cpp"/>
       <folder Name="wsan">
-        <file file_name="../wsan/OfferMsg.h"/>
+        <file file_name="../wsan/NumValMsg.h"/>
         <file file_name="../wsan/DiscoverMsg.h"/>
         <file file_name="../wsan/Msg.h"/>
       </folder>

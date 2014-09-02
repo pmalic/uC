@@ -3,7 +3,7 @@
 #include "ks0108/KS0108.h"
 #include "xbee/XBee.h"
 #include "wsan/DiscoverMsg.h"
-#include "wsan/OfferMsg.h"
+#include "wsan/NumValMsg.h"
 
 #define MAX_TXT_SIZE	32
 

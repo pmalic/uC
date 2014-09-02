@@ -4,7 +4,7 @@
 #include "SDFileSystem.h"
 
 #include "xbee/XBee.h"
-#include "wsan/OfferMsg.h"
+#include "wsan/NumValMsg.h"
 #include "wsan/DiscoverMsg.h"
 
 #include "QHTTPHandler.h"
