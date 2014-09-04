@@ -1,22 +1,29 @@
 
-#ifndef OFFERMSG_H_
-#define OFFERMSG_H_
+#ifndef NUMVALMSG_H_
+#define NUMVALMSG_H_
 
-#include "wsan/Msg.h"
+#include <wsan/Msg.h>
 
 namespace wsan
 {
 
-class OfferMsg : public Msg
+class NumValMsg : public Msg
 {
 public:
-	static const uint8_t MSG_TYPE = 1;
+	static const char TYPE = 'N';
 
 	typedef struct
 	{
-		char node_name[16];
-		uint8_t desc;
-		uint32_t val;
+		uint8_t spec;
+		uint8_t val1;
+		uint8_t val2;
+		uint8_t val3;
+		uint8_t val4;
+		uint8_t val5;
+		uint8_t val6;
+		uint8_t val7;
+		uint8_t val8;
+		char desc[DESC_SIZE];
 	} __attribute__((packed)) Payload;
 
 	typedef struct
@@ -25,38 +32,157 @@ public:
 		Payload payload;
 	} __attribute__((packed)) Frame;
 
-	Frame frame;
-
-	OfferMsg (const char* node_name)
-	: Msg(frame.header, MSG_TYPE)
+	NumValMsg (const char* node_name)
+		: Msg(_frame.header, TYPE, node_name)
 	{
-		strncpy(frame.payload.node_name, node_name, 16);
-		frame.payload.node_name[15] = 0;
+		memset(&_frame.payload, 0, sizeof _frame.payload);
 	}
 
-	OfferMsg (const uint8_t* data, const uint8_t data_size)
-	: Msg(frame.header, MSG_TYPE)
+	NumValMsg (const uint8_t* data, const uint8_t data_size)
 	{
-		if (data_size != sizeof frame || !isPreambleOk(data) || data[4] != MSG_TYPE)
+		if (data_size != sizeof _frame || !isPreambleOk(data) || data[PREAMBLE_SIZE] != TYPE)
+		{
+			memset(&_frame, 0, sizeof _frame);
 			return;
+		}
 
-		const size_t header_size = sizeof frame.header;
-		const size_t payload_size = sizeof frame.payload;
-
-		if (data_size - header_size == payload_size)
-			memcpy(&frame.payload, data + header_size, payload_size);
+		memcpy(&_frame, data, data_size);
 	}
 
-	uint8_t* getData ()
+	char getType () const
 	{
-		return reinterpret_cast<uint8_t*>(&frame);
+		return _frame.header.type;
 	}
 
-	uint8_t getDataSize ()
+	const char* getNodeName () const
 	{
-		return static_cast<uint8_t>(sizeof frame);
+		return _frame.header.node_name;
 	}
 
+	void setDesc (const char* desc)
+	{
+		Msg::setDesc(_frame.payload.desc, desc);
+	}
+
+	const char* getDesc () const
+	{
+		return _frame.payload.desc;
+	}
+
+	const uint8_t* getData () const
+	{
+		return reinterpret_cast<const uint8_t*>(&_frame);
+	}
+
+	uint8_t getDataSize () const
+	{
+		return static_cast<uint8_t>(sizeof _frame);
+	}
+
+	void setValue (const double value, uint8_t decimals)
+	{
+		_frame.payload.spec = decimals << 1;
+
+		if (value < 0)
+			_frame.payload.spec |= 1;
+
+		unsigned int factor = 1;
+
+		while (decimals--)
+			factor *= 10;
+
+		packValue(static_cast<uint64_t>(value * (value < 0 ? -1 : 1) * factor));
+	}
+
+	void setValue (const int64_t value)
+	{
+		_frame.payload.spec = value < 0 ? 1 : 0;
+
+		packValue(static_cast<uint64_t>(value));
+	}
+
+	void setValue (const int32_t value)
+	{
+		_frame.payload.spec = value < 0 ? 1 : 0;
+
+		packValue(static_cast<uint64_t>(value));
+	}
+
+	double getValue () const
+	{
+		uint8_t decimals = _frame.payload.spec >> 1;
+		double factor = 1.0;
+
+		while (decimals--)
+			factor *= 10.0;
+
+		return unpackValue() / factor * (_frame.payload.spec & 1 ? -1 : 1);
+	}
+
+	int64_t getInt64 () const
+	{
+		int64_t value = static_cast<int64_t>(unpackValue());
+
+		if (_frame.payload.spec & 1)
+			value *= -1;
+
+		return value;
+	}
+
+	int32_t getInt32 () const
+	{
+		int32_t value = static_cast<int32_t>(unpackValue());
+
+		if (_frame.payload.spec & 1)
+			value *= -1;
+
+		return value;
+	}
+
+private:
+	void packValue (const uint64_t value)
+	{
+		_frame.payload.val1 = value;
+		_frame.payload.val2 = value >> 8;
+		_frame.payload.val3 = value >> 16;
+		_frame.payload.val4 = value >> 24;
+		_frame.payload.val5 = value >> 32;
+		_frame.payload.val6 = value >> 40;
+		_frame.payload.val7 = value >> 48;
+		_frame.payload.val8 = value >> 56;
+	}
+
+	uint64_t unpackValue () const
+	{
+		uint64_t value;
+
+		value = _frame.payload.val8;
+		value <<= 8;
+
+		value |= _frame.payload.val7;
+		value <<= 8;
+
+		value |= _frame.payload.val6;
+		value <<= 8;
+
+		value |= _frame.payload.val5;
+		value <<= 8;
+
+		value |= _frame.payload.val4;
+		value <<= 8;
+
+		value |= _frame.payload.val3;
+		value <<= 8;
+
+		value |= _frame.payload.val2;
+		value <<= 8;
+
+		value |= _frame.payload.val1;
+
+		return value;
+	}
+
+	Frame _frame;
 };
 
 }

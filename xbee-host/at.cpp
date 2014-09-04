@@ -1,9 +1,4 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <stdio.h>
-#include <unistd.h>
-#include "xbee/XBee.h"
+#include <xbee/XBee.h>
 
 int main (int argc, char* argv[])
 {
@@ -18,9 +13,9 @@ int main (int argc, char* argv[])
 	SERIAL serial = SERIAL(argv[1]);
 	XBee xbee = XBee();
 
-	uint8_t cmd[] = { argv[2][0], argv[2][1] };
+	char cmd[] = { argv[2][0], argv[2][1] };
 
-	AtCommandRequest atRequest = AtCommandRequest(cmd);
+	AtCommandRequest atRequest = AtCommandRequest(reinterpret_cast<uint8_t*>(cmd));
 	AtCommandResponse atResponse = AtCommandResponse();
 
 	serial.begin(115200);
@@ -54,7 +49,7 @@ int main (int argc, char* argv[])
 
 	cerr << "Command '" << atResponse.getCommand()[0] << atResponse.getCommand()[1] << "' was successful, ";
 
-	unsigned short valueLen = static_cast<unsigned short>(atResponse.getValueLength());
+	const unsigned short valueLen = static_cast<unsigned short>(atResponse.getValueLength());
 
 	if (!valueLen)
 		cerr << "no return value." << endl;
@@ -62,7 +57,7 @@ int main (int argc, char* argv[])
 	{
 		cerr << "return value is " << valueLen << " byte(s) long:" << endl;
 
-		uint8_t* value = atResponse.getValue();
+		const uint8_t* value = atResponse.getValue();
 
 		cerr << hex << uppercase;
 

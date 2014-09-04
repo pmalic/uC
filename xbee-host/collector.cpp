@@ -1,14 +1,16 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <stdio.h>
-#include <unistd.h>
-#include "xbee/XBee.h"
-#include "wsan/DiscoverMsg.h"
-#include "wsan/NumValMsg.h"
+#include <boost/format.hpp>
+
+#include <xbee/XBee.h>
+#include <wsan/DiscoverMsg.h>
+#include <wsan/NumValMsg.h>
+#include <wsan/BoolValMsg.h>
+#include <wsan/StrValMsg.h>
 
 using namespace std;
 using namespace wsan;
+
+typedef unique_ptr<Msg> msg_ptr_type;
+typedef list<msg_ptr_type> msg_ptr_list_type;
 
 void sendDiscovery (XBee& xbee)
 {
@@ -16,16 +18,16 @@ void sendDiscovery (XBee& xbee)
 
 	XBeeAddress64 addr = XBeeAddress64(0x0, 0xffff);
 
-	DiscoverMsg msg;
+	DiscoverMsg msg("CRDPM");
 
-	ZBTxRequest tx = ZBTxRequest(addr, msg.getData(), msg.getDataSize());
+	ZBTxRequest tx = ZBTxRequest(addr, const_cast<uint8_t*>(msg.getData()), msg.getDataSize());
 
 	xbee.send(tx);
 }
 
-void readDiscovery (XBee& xbee, vector<OfferMsg>& offers)
+void readDiscovery (XBee& xbee, msg_ptr_list_type& vals)
 {
-	cerr << "Waiting for offer msgs..." << endl;
+	cerr << "Waiting for msgs..." << endl;
 
 	Stopwatch stopwatch;
 
@@ -48,12 +50,32 @@ void readDiscovery (XBee& xbee, vector<OfferMsg>& offers)
 
 		uint8_t* data = rx.getData();
 
-		if (!Msg::isPreambleOk(data) || data[4] != OfferMsg::MSG_TYPE)
+		if (!Msg::isPreambleOk(data))
 			continue;
 
-		OfferMsg msg(data, data_size);
+		switch (data[PREAMBLE_SIZE])
+		{
+			case NumValMsg::TYPE:
+			{
+				msg_ptr_type msg(new NumValMsg(data, data_size));
+				vals.push_back(std::move(msg));
+				break;
+			}
 
-		offers.push_back(msg);
+			case BoolValMsg::TYPE:
+			{
+				msg_ptr_type msg(new BoolValMsg(data, data_size));
+				vals.push_back(std::move(msg));
+				break;
+			}
+
+			case StrValMsg::TYPE:
+			{
+				msg_ptr_type msg(new StrValMsg(data, data_size));
+				vals.push_back(std::move(msg));
+				break;
+			}
+		}
 
 		usleep(10);
 	}
@@ -74,32 +96,53 @@ int main (int argc, char* argv[])
 	XBee xbee = XBee();
 	xbee.setSerial(serial);
 
-	vector<OfferMsg> offers;
+	msg_ptr_list_type vals;
 
 	while (true)
 	{
 		sendDiscovery(xbee);
 
-		readDiscovery(xbee, offers);
+		readDiscovery(xbee, vals);
 
-		cerr << ">>> RECEIVED OFFERS <<<" << endl;
+		cerr << ">>> RECEIVED VALUES <<<" << endl;
 
-		for (vector<OfferMsg>::const_iterator it = offers.begin(), it_end = offers.end(); it != it_end; ++it)
+		for (msg_ptr_list_type::const_iterator it = vals.begin(), it_end = vals.end(); it != it_end; ++it)
 		{
-			const OfferMsg& msg = *it;
+			cerr << (*it)->getNodeName() << ' ' << (*it)->getDesc() << ": ";
 
-			unsigned int decimals = msg.frame.payload.desc >> 1;
-			unsigned int factor = 1;
+			switch ((*it)->getType())
+			{
+				case 'N':
+				{
+					const NumValMsg* msg = reinterpret_cast<const NumValMsg*>(it->get());
+					cerr << boost::format("%.2f") % msg->getValue();
+					break;
+				}
 
-			while (decimals--)
-				factor *= 10;
+				case 'B':
+				{
+					const BoolValMsg* msg = reinterpret_cast<const BoolValMsg*>(it->get());
+					cerr << (msg->getValue() ? "TRUE" : "FALSE");
+					break;
+				}
 
-			cerr << msg.frame.payload.node_name << ":" << (msg.frame.payload.desc & 0x1 ? '-' : '+') <<	(msg.frame.payload.val / factor) << '.' << (msg.frame.payload.val % factor) << "C ";
+				case 'S':
+				{
+					const StrValMsg* msg = reinterpret_cast<const StrValMsg*>(it->get());
+					cerr << '"' << msg->getValue() << '"';
+					break;
+				}
+
+				default:
+					break;
+			}
+
+			cerr << endl;
 		}
 
 		cerr << endl << endl;
 
-		offers.clear();
+		vals.clear();
 	}
 
 	return 0;

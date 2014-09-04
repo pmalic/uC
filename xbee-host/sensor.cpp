@@ -1,37 +1,60 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <stdio.h>
-#include <unistd.h>
 #include <boost/random.hpp>
-#include "xbee/XBee.h"
-#include "wsan/DiscoverMsg.h"
-#include "wsan/NumValMsg.h"
+#include <boost/format.hpp>
+
+#include <xbee/XBee.h>
+#include <wsan/DiscoverMsg.h>
+#include <wsan/NumValMsg.h>
+#include <wsan/BoolValMsg.h>
+#include <wsan/StrValMsg.h>
 
 using namespace std;
 using namespace wsan;
 
-void genRandom (OfferMsg& msg)
+int genRandomInt (const uint32_t seed)
 {
-	boost::mt19937 seed(time(0));
-	boost::uniform_int<> bounds(0, 10000);
-	boost::variate_generator<boost::mt19937, boost::uniform_int<> > rng(seed, bounds);
+	boost::variate_generator<boost::mt19937, boost::uniform_int<> > rng(boost::mt19937(seed), boost::uniform_int<>(-10000, 10000));
 
-	msg.frame.payload.val = rng();
-	msg.frame.payload.desc += msg.frame.payload.val & 0x1;
+	return rng();
 }
 
-void sendOffer (XBee &xbee, XBeeAddress64& addr)
+bool genRandomBool (const uint32_t seed)
 {
-	cerr << "Sending offer msg to " << hex << addr.getMsb() << ":" << addr.getLsb() << "..." << endl;
+	return genRandomInt(seed) > 0;
+}
 
-	OfferMsg msg("PM2");
-	msg.frame.payload.desc = 2 << 1;
-	genRandom(msg);
+void reply (XBee &xbee, const DiscoverMsg& msg, XBeeAddress64& addr)
+{
+	cerr << "Replying to " << msg.getNodeName() << " ("<< hex << addr.getMsb() << ':' << addr.getLsb() << ")..." << endl;
 
-	ZBTxRequest tx = ZBTxRequest(addr, msg.getData(), msg.getDataSize());
 
-	xbee.send(tx);
+	NumValMsg msg1("PM2");
+	const double d = genRandomInt(time(0)) / 100.0;
+	msg1.setValue(d, 2);
+	msg1.setDesc("DBL");
+	cerr << "\tDBL: " << boost::format("%.2f") % d << endl;
+
+	ZBTxRequest tx1 = ZBTxRequest(addr, const_cast<uint8_t*>(msg1.getData()), msg1.getDataSize());
+	xbee.send(tx1);
+
+
+	BoolValMsg msg2("PM2");
+	const bool b = genRandomBool(time(0));
+	msg2.setValue(b);
+	msg2.setDesc("BOOL");
+	cerr << "\tBOOL: " << (b ? "TRUE" : "FALSE") << endl;
+
+	ZBTxRequest tx2 = ZBTxRequest(addr, const_cast<uint8_t*>(msg2.getData()), msg2.getDataSize());
+	xbee.send(tx2);
+
+
+	StrValMsg msg3("PM2");
+	const char* s = "Hello World!";
+	msg3.setValue(s);
+	msg3.setDesc("STR");
+	cerr << "\tSTR: \"" << s << '"' << endl;
+
+	ZBTxRequest tx3 = ZBTxRequest(addr, const_cast<uint8_t*>(msg3.getData()), msg3.getDataSize());
+	xbee.send(tx3);
 }
 
 int main (int argc, char* argv[])
@@ -48,7 +71,6 @@ int main (int argc, char* argv[])
 	XBee xbee = XBee();
 	xbee.setSerial(serial);
 
-	XBeeResponse response = XBeeResponse();
 	ZBRxResponse rx = ZBRxResponse();
 
 	while (true)
@@ -67,12 +89,14 @@ int main (int argc, char* argv[])
 
 		uint8_t* data = rx.getData();
 
-		if (!Msg::isPreambleOk(data) || data[4] != DiscoverMsg::MSG_TYPE)
+		DiscoverMsg msg(data, data_size);
+
+		if (msg.getType() != DiscoverMsg::TYPE)
 			continue;
 
 		usleep(100);
 
-		sendOffer(xbee, rx.getRemoteAddress64());
+		reply(xbee, msg, rx.getRemoteAddress64());
 	}
 
 	return 0;
