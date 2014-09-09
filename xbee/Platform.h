@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013 Predrag Malicevic. All rights reserved.
+ * Copyright (c) 2014 Predrag Malicevic. All rights reserved.
  *
  * This file is part of XBee-Arduino.
  *
@@ -181,23 +181,27 @@ private:
 public:
 #if defined(__ARMCC_VERSION)
 	SERIAL (const PinName& tx = p28, const PinName& rx = p27)
-	: _port(MODSERIAL(tx, rx))
+    : _port(MODSERIAL(tx, rx))
 	{
 	}
 #elif defined(_LPC2100)
 	SERIAL (const unsigned short number = 1)
-	: _number(number)
+    : _number(number)
 	{
 	}
 #elif defined(BOOST_GCC) || defined(BOOST_MSVC)
 	SERIAL (const std::string& name)
-	: _name(name), _io(), _port(_io, name)
+    : _name(name)
+    , _io()
+    , _port(_io, name)
 	{
 		_start();
 	}
 
 	SERIAL (const SERIAL& serial)
-	: _name(serial._name), _io(), _port(_io, serial._name)
+    : _name(serial._name)
+    , _io()
+    , _port(_io, serial._name)
 	{
 		_start();
 	}
@@ -233,7 +237,7 @@ public:
 #endif
 	}
 
-	int available ()
+	virtual int available ()
 	{
 #if defined(__ARMCC_VERSION)
 		return _port.readable();
@@ -246,7 +250,7 @@ public:
 #endif
 	}
 
-	int read ()
+	virtual int read ()
 	{
 #if defined(__ARMCC_VERSION)
 		return _port.getc();
@@ -268,7 +272,7 @@ public:
 #endif
 	}
 
-	void flush ()
+	virtual void flush ()
 	{
 #if defined(__ARMCC_VERSION)
 		while(_port.readable())
@@ -282,7 +286,7 @@ public:
 #endif
 	}
 
-	void write (uint8_t i)
+	virtual void write (uint8_t i)
 	{
 #if defined(__ARMCC_VERSION)
 		_port.putc(i);
@@ -299,5 +303,4 @@ public:
 };
 #endif
 
-#endif /* PLATFORM_H_ */
-
+#endif // PLATFORM_H_

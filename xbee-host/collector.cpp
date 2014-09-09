@@ -6,32 +6,16 @@
 #include <wsan/BoolValMsg.h>
 #include <wsan/StrValMsg.h>
 
-using namespace std;
-using namespace wsan;
-
-typedef unique_ptr<Msg> msg_ptr_type;
-typedef list<msg_ptr_type> msg_ptr_list_type;
-
-void sendDiscovery (XBee& xbee)
-{
-	cerr << "Sending discovery msg..." << endl;
-
-	XBeeAddress64 addr = XBeeAddress64(0x0, 0xffff);
-
-	DiscoverMsg msg("CRDPM");
-
-	ZBTxRequest tx = ZBTxRequest(addr, const_cast<uint8_t*>(msg.getData()), msg.getDataSize());
-
-	xbee.send(tx);
-}
+typedef std::unique_ptr<wsan::Msg> msg_ptr_type;
+typedef std::list<msg_ptr_type> msg_ptr_list_type;
 
 void readDiscovery (XBee& xbee, msg_ptr_list_type& vals)
 {
-	cerr << "Waiting for msgs..." << endl;
+	std::cerr << "Waiting for msgs..." << std::endl;
 
 	Stopwatch stopwatch;
 
-	while (stopwatch.read() < 3000)
+	while (stopwatch.read() < 2000)
 	{
 		xbee.readPacket();
 
@@ -40,7 +24,7 @@ void readDiscovery (XBee& xbee, msg_ptr_list_type& vals)
 		if (!res.isAvailable() || res.getApiId() != ZB_RX_RESPONSE)
 			continue;
 
-		ZBRxResponse rx = ZBRxResponse();
+		ZBRxResponse rx;
 		res.getZBRxResponse(rx);
 
 		const uint8_t data_size = rx.getDataLength();
@@ -48,30 +32,30 @@ void readDiscovery (XBee& xbee, msg_ptr_list_type& vals)
 		if (data_size < 5)
 			continue;
 
-		uint8_t* data = rx.getData();
+		const uint8_t* data = rx.getData();
 
-		if (!Msg::isPreambleOk(data))
+		if (!wsan::Msg::isPreambleOk(data))
 			continue;
 
-		switch (data[PREAMBLE_SIZE])
+		switch (data[wsan::Msg::PREAMBLE_SIZE])
 		{
-			case NumValMsg::TYPE:
+			case wsan::NumValMsg::TYPE:
 			{
-				msg_ptr_type msg(new NumValMsg(data, data_size));
+				msg_ptr_type msg(new wsan::NumValMsg(data, data_size));
 				vals.push_back(std::move(msg));
 				break;
 			}
 
-			case BoolValMsg::TYPE:
+			case wsan::BoolValMsg::TYPE:
 			{
-				msg_ptr_type msg(new BoolValMsg(data, data_size));
+				msg_ptr_type msg(new wsan::BoolValMsg(data, data_size));
 				vals.push_back(std::move(msg));
 				break;
 			}
 
-			case StrValMsg::TYPE:
+			case wsan::StrValMsg::TYPE:
 			{
-				msg_ptr_type msg(new StrValMsg(data, data_size));
+				msg_ptr_type msg(new wsan::StrValMsg(data, data_size));
 				vals.push_back(std::move(msg));
 				break;
 			}
@@ -86,50 +70,55 @@ int main (int argc, char* argv[])
 {
 	if (argc < 2)
 	{
-		cerr << "Not enough parameters!" << endl;
+		std::cerr << "Not enough parameters!" << std::endl;
 		return 1;
 	}
 
-	SERIAL serial = SERIAL(argv[1]);
+	SERIAL serial(argv[1]);
 	serial.begin(115200);
 
-	XBee xbee = XBee();
+	XBee xbee;
 	xbee.setSerial(serial);
-
-	msg_ptr_list_type vals;
 
 	while (true)
 	{
-		sendDiscovery(xbee);
+		std::cerr << "Sending discovery msg..." << std::endl;
 
+		wsan::DiscoverMsg msg("CRDPM");
+
+		XBeeAddress64 addr(0x0, 0xffff);
+		ZBTxRequest tx(addr, const_cast<uint8_t*>(msg.getData()), msg.getDataSize());
+		xbee.send(tx);
+
+		msg_ptr_list_type vals;
 		readDiscovery(xbee, vals);
 
-		cerr << ">>> RECEIVED VALUES <<<" << endl;
+		std::cerr << ">>> RECEIVED VALUES <<<" << std::endl;
 
 		for (msg_ptr_list_type::const_iterator it = vals.begin(), it_end = vals.end(); it != it_end; ++it)
 		{
-			cerr << (*it)->getNodeName() << ' ' << (*it)->getDesc() << ": ";
+			std::cerr << (*it)->getNodeName() << ' ' << (*it)->getDesc() << ": ";
 
 			switch ((*it)->getType())
 			{
 				case 'N':
 				{
-					const NumValMsg* msg = reinterpret_cast<const NumValMsg*>(it->get());
-					cerr << boost::format("%.2f") % msg->getValue();
+					const wsan::NumValMsg* msg = reinterpret_cast<const wsan::NumValMsg*>(it->get());
+					std::cerr << boost::format("%.2f") % msg->getValue();
 					break;
 				}
 
 				case 'B':
 				{
-					const BoolValMsg* msg = reinterpret_cast<const BoolValMsg*>(it->get());
-					cerr << (msg->getValue() ? "TRUE" : "FALSE");
+					const wsan::BoolValMsg* msg = reinterpret_cast<const wsan::BoolValMsg*>(it->get());
+					std::cerr << (msg->getValue() ? "TRUE" : "FALSE");
 					break;
 				}
 
 				case 'S':
 				{
-					const StrValMsg* msg = reinterpret_cast<const StrValMsg*>(it->get());
-					cerr << '"' << msg->getValue() << '"';
+					const wsan::StrValMsg* msg = reinterpret_cast<const wsan::StrValMsg*>(it->get());
+					std::cerr << '"' << msg->getValue() << '"';
 					break;
 				}
 
@@ -137,10 +126,10 @@ int main (int argc, char* argv[])
 					break;
 			}
 
-			cerr << endl;
+			std::cerr << std::endl;
 		}
 
-		cerr << endl << endl;
+		std::cerr << std::endl << std::endl;
 
 		vals.clear();
 	}

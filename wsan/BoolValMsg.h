@@ -41,32 +41,32 @@ public:
 		memcpy(&_frame, data, data_size);
 	}
 
-	char getType () const
+	virtual char getType () const
 	{
 		return _frame.header.type;
 	}
 
-	const char* getNodeName () const
+	virtual std::string getNodeName () const
 	{
-		return _frame.header.node_name;
+		return std::string(_frame.header.node_name, NODE_NAME_SIZE);
 	}
 
-	void setDesc (const char* desc)
+	virtual void setDesc (const std::string& desc)
 	{
-		Msg::setDesc(_frame.payload.desc, desc);
+		strncpy(_frame.payload.desc, desc.c_str(), DESC_SIZE);
 	}
 
-	const char* getDesc () const
+	virtual std::string getDesc () const
 	{
-		return _frame.payload.desc;
+		return std::string(_frame.payload.desc, DESC_SIZE);
 	}
 
-	const uint8_t* getData () const
+	virtual const uint8_t* getData () const
 	{
 		return reinterpret_cast<const uint8_t*>(&_frame);
 	}
 
-	uint8_t getDataSize () const
+	virtual uint8_t getDataSize () const
 	{
 		return static_cast<uint8_t>(sizeof _frame);
 	}
@@ -87,4 +87,4 @@ private:
 
 }
 
-#endif
+#endif // BOOLMSG_H_

@@ -329,12 +329,12 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //				width+=2;
 //			}
 //		}
-//		
+//
 //		if (this.containsDigital()) {
 //			// digital enabled takes two bytes, no matter how many pins enabled
 //			width+= 2;
 //		}
-//		
+//
 //		return width;
 //	}
 //
@@ -349,29 +349,29 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //			// 64 bit
 //			startIndex = 13;
 //		}
-//		
+//
 //		return startIndex;
 //	}
-//	
+//
 //	public int getDigitalMsb(int sample) {
 //		// msb digital always starts 3 bytes after sample size
 //		return this.getProcessedPacketBytes()[this.getStartIndex() + 3 + this.getSampleWidth() * sample];
 //	}
-//	
+//
 //	public int getDigitalLsb(int sample) {
 //		return this.getProcessedPacketBytes()[this.getStartIndex() + 3 + this.getSampleWidth() * sample + 1];
-//	}	
+//	}
 //
 //	public Boolean isDigitalOn(int pin, int sample) {
-//		
+//
 //		if (sample < 0 || sample >= this.getSampleSize()) {
 //			throw new IllegalArgumentException("invalid sample size: " + sample);
 //		}
-//		
+//
 //		if (!this.containsDigital()) {
 //			throw new RuntimeException("Digital is not enabled");
 //		}
-//		
+//
 //		if (pin >= 0 && pin < 8) {
 //			return ((this.getDigitalLsb(sample) >> pin) & 1) == 1;
 //		} else if (pin == 8) {
@@ -379,23 +379,23 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //			return (this.getDigitalMsb(sample) & 1) == 1;
 //		} else {
 //			throw new IllegalArgumentException("Invalid pin: " + pin);
-//		}		
+//		}
 //	}
-//	
+//
 //	public Integer getAnalog(int pin, int sample) {
-//		
+//
 //		if (sample < 0 || sample >= this.getSampleSize()) {
 //			throw new IllegalArgumentException("invalid sample size: " + sample);
 //		}
-//		
+//
 //		// analog starts 3 bytes after start of sample, if no dio enabled
 //		int startIndex = this.getStartIndex() + 3;
-//		
+//
 //		if (this.containsDigital()) {
 //			// make room for digital i/o sample (2 bytes per sample)
 //			startIndex+= 2;
 //		}
-//		
+//
 //		startIndex+= this.getSampleWidth() * sample;
 //
 //		// start depends on how many pins before this pin are enabled
@@ -406,9 +406,9 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //			}
 //		}
 //
-//		return (this.getProcessedPacketBytes()[startIndex] << 8) + this.getProcessedPacketBytes()[startIndex + 1];		
+//		return (this.getProcessedPacketBytes()[startIndex] << 8) + this.getProcessedPacketBytes()[startIndex + 1];
 //	}
-				
+
 // THIS IS WRONG
 uint16_t RxIoSampleBaseResponse::getAnalog(uint8_t pin, uint8_t sample) {
 
@@ -789,11 +789,11 @@ bool XBee::available() {
 
 uint8_t XBee::read() {
 	return _serial->read();
-} 
+}
 
 void XBee::flush() {
 	_serial->flush();
-} 
+}
 
 void XBee::write(uint8_t val) {
 	_serial->write(val);
@@ -1464,4 +1464,3 @@ void XBee::sendByte(uint8_t b, bool escape) {
 		write(b);
 	}
 }
-

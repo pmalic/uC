@@ -14,12 +14,19 @@ public:
 
 	typedef struct
 	{
+		char desc[DESC_SIZE];
+	} __attribute__((packed)) Payload;
+
+	typedef struct
+	{
 		Header header;
+		Payload payload;
 	} __attribute__((packed)) Frame;
 
 	DiscoverMsg (const char* node_name)
 		: Msg(_frame.header, TYPE, node_name)
 	{
+		memset(&_frame.payload, 0, sizeof _frame.payload);
 	}
 
 	DiscoverMsg (const uint8_t* data, const uint8_t data_size)
@@ -33,31 +40,32 @@ public:
 		memcpy(&_frame, data, data_size);
 	}
 
-	char getType () const
+	virtual char getType () const
 	{
 		return _frame.header.type;
 	}
 
-	const char* getNodeName () const
+	virtual std::string getNodeName () const
 	{
-		return _frame.header.node_name;
+		return std::string(_frame.header.node_name, NODE_NAME_SIZE);
 	}
 
-	void setDesc (const char* desc)
+	virtual void setDesc (const std::string& desc)
 	{
+		strncpy(_frame.payload.desc, desc.c_str(), DESC_SIZE);
 	}
 
-	const char* getDesc () const
+	virtual std::string getDesc () const
 	{
-		return "";
+		return std::string(_frame.payload.desc, DESC_SIZE);
 	}
 
-	const uint8_t* getData () const
+	virtual const uint8_t* getData () const
 	{
 		return reinterpret_cast<const uint8_t*>(&_frame);
 	}
 
-	uint8_t getDataSize () const
+	virtual uint8_t getDataSize () const
 	{
 		return static_cast<uint8_t>(sizeof _frame);
 	}
@@ -68,4 +76,4 @@ private:
 
 }
 
-#endif
+#endif // DISCOVERMSG_H_
