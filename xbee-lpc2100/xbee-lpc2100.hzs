@@ -2,7 +2,7 @@
 <session>
  <Bookmarks/>
  <Breakpoints>
-  <BreakpointListItem line="163" action="" hardwareBreakpoint="" trigger="" useHWbreakpoint="false" group="Breakpoints" type="Breakpoint" state="2" counter="0" isFunctionBreakpoint="false" filename="Z:\uc\onewire\OneWire.cpp" expression="" />
+  <BreakpointListItem line="163" action="" hardwareBreakpoint="" trigger="" useHWbreakpoint="false" group="Breakpoints" type="Breakpoint" state="2" counter="0" isFunctionBreakpoint="false" filename="Z:\uc\xbee-lpc2100\onewire\OneWire.cpp" expression="" />
  </Breakpoints>
  <ExecutionCountWindow/>
  <Memory1>
@@ -51,5 +51,5 @@
   <Watches active="0" update="Never" />
  </Watch4>
  <Files/>
- <ARMCrossStudioWindow activeProject="sensor" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\onewire" fileDialogDefaultFilter="*.h" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
+ <ARMCrossStudioWindow activeProject="sensor" autoConnectTarget="Segger J-Link" debugSearchFileMap="" fileDialogInitialDirectory="Z:\uc\xbee-lpc2100\onewire" fileDialogDefaultFilter="*.h" autoConnectCapabilities="388479" debugSearchPath="" buildConfiguration="ARM Flash Release" />
 </session>

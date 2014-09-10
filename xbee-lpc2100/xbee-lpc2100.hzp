@@ -10,12 +10,12 @@
         <configuration Name="Common" c_preprocessor_definitions="" c_user_include_directories=""/>
       </file>
       <folder Name="ks0108">
-        <file file_name="../ks0108/KS0108-LPC.c"/>
-        <file file_name="../ks0108/font5x8.h"/>
-        <file file_name="../ks0108/graphic.c"/>
-        <file file_name="../ks0108/graphic.h"/>
-        <file file_name="../ks0108/KS0108.c"/>
-        <file file_name="../ks0108/KS0108.h"/>
+        <file file_name="ks0108/KS0108-LPC.c"/>
+        <file file_name="ks0108/font5x8.h"/>
+        <file file_name="ks0108/graphic.c"/>
+        <file file_name="ks0108/graphic.h"/>
+        <file file_name="ks0108/KS0108.c"/>
+        <file file_name="ks0108/KS0108.h"/>
       </folder>
       <folder Name="xbee">
         <file file_name="../xbee/XBee.h"/>
@@ -56,12 +56,12 @@
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc"/>
       <folder Name="ks0108">
-        <file file_name="../ks0108/KS0108-LPC.c"/>
-        <file file_name="../ks0108/font5x8.h"/>
-        <file file_name="../ks0108/graphic.c"/>
-        <file file_name="../ks0108/graphic.h"/>
-        <file file_name="../ks0108/KS0108.c"/>
-        <file file_name="../ks0108/KS0108.h"/>
+        <file file_name="ks0108/KS0108-LPC.c"/>
+        <file file_name="ks0108/font5x8.h"/>
+        <file file_name="ks0108/graphic.c"/>
+        <file file_name="ks0108/graphic.h"/>
+        <file file_name="ks0108/KS0108.c"/>
+        <file file_name="ks0108/KS0108.h"/>
       </folder>
       <folder Name="xbee">
         <file file_name="../xbee/XBee.h"/>
@@ -99,9 +99,9 @@
       </folder>
       <file file_name="sensor.cpp"/>
       <folder Name="onewire">
-        <file file_name="../onewire/OneWire.h"/>
-        <file file_name="../onewire/OneWire.cpp"/>
-        <file file_name="../onewire/compat.h"/>
+        <file file_name="onewire/OneWire.h"/>
+        <file file_name="onewire/OneWire.cpp"/>
+        <file file_name="onewire/compat.h"/>
       </folder>
     </folder>
     <folder Name="System Files">
@@ -122,17 +122,17 @@
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc"/>
       <folder Name="ks0108">
-        <file file_name="../ks0108/KS0108-LPC.c"/>
-        <file file_name="../ks0108/font5x8.h"/>
-        <file file_name="../ks0108/graphic.c"/>
-        <file file_name="../ks0108/graphic.h"/>
-        <file file_name="../ks0108/KS0108.c"/>
-        <file file_name="../ks0108/KS0108.h"/>
+        <file file_name="ks0108/KS0108-LPC.c"/>
+        <file file_name="ks0108/font5x8.h"/>
+        <file file_name="ks0108/graphic.c"/>
+        <file file_name="ks0108/graphic.h"/>
+        <file file_name="ks0108/KS0108.c"/>
+        <file file_name="ks0108/KS0108.h"/>
       </folder>
       <folder Name="onewire">
-        <file file_name="../onewire/OneWire.h"/>
-        <file file_name="../onewire/OneWire.cpp"/>
-        <file file_name="../onewire/compat.h"/>
+        <file file_name="onewire/OneWire.h"/>
+        <file file_name="onewire/OneWire.cpp"/>
+        <file file_name="onewire/compat.h"/>
       </folder>
       <file file_name="temp.cpp"/>
     </folder>
