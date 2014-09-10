@@ -30,7 +30,6 @@
 	#include <HardwareSerial.h>
 #elif defined(__ARMCC_VERSION)
 	#include <mbed.h>
-	#include <MODSERIAL.h>
 #elif defined(_LPC2100)
 	#include <cstddef>
 	#include <stdint.h>
@@ -120,7 +119,7 @@ class SERIAL : public STREAM
 {
 private:
 #if defined(__ARMCC_VERSION)
-	MODSERIAL _port;
+	Serial _port;
 #elif defined(_LPC2100)
 	const unsigned short _number;
 #elif defined(BOOST_GCC) || defined(BOOST_MSVC)
@@ -181,7 +180,7 @@ private:
 public:
 #if defined(__ARMCC_VERSION)
 	SERIAL (const PinName& tx = p28, const PinName& rx = p27)
-    : _port(MODSERIAL(tx, rx))
+    : _port(Serial(tx, rx))
 	{
 	}
 #elif defined(_LPC2100)
