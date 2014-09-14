@@ -12,12 +12,12 @@ class StrValMsg : public Msg
 public:
 	static const char TYPE = 'S';
 
-	static const size_t VAL_SIZE = 	52;
+	static const size_t VAL_SIZE = 	47;
 
 	typedef struct
 	{
-		char val[VAL_SIZE];
-		char desc[DESC_SIZE];
+		char val[StrValMsg::VAL_SIZE];
+		char desc[Msg::DESC_SIZE];
 	} __attribute__((packed)) Payload;
 
 	typedef struct
@@ -26,15 +26,15 @@ public:
 		Payload payload;
 	} __attribute__((packed)) Frame;
 
-	StrValMsg (const char* node_name)
-		: Msg(_frame.header, TYPE, node_name)
+	StrValMsg (const char* node, const char* sess = NULL, const char vnet = 0)
+		: Msg(_frame.header, StrValMsg::TYPE, node, sess, vnet)
 	{
 		memset(&_frame.payload, 0, sizeof _frame.payload);
 	}
 
 	StrValMsg (const uint8_t* data, const uint8_t data_size)
 	{
-		if (data_size != sizeof _frame || !isPreambleOk(data) || data[PREAMBLE_SIZE] != TYPE)
+		if (data_size != sizeof _frame || !isPreambleOk(data) || data[Msg::PREAMBLE_SIZE] != StrValMsg::TYPE)
 		{
 			memset(&_frame, 0, sizeof _frame);
 			return;
@@ -48,19 +48,21 @@ public:
 		return _frame.header.type;
 	}
 
-	virtual std::string getNodeName () const
+	virtual std::string getNode () const
 	{
-		return std::string(_frame.header.node_name, NODE_NAME_SIZE);
+		const char* node = _frame.header.node;
+		return node[Msg::NODE_SIZE - 1] ? std::string(node, Msg::NODE_SIZE) : std::string(node);
 	}
 
 	virtual void setDesc (const std::string& desc)
 	{
-		strncpy(_frame.payload.desc, desc.c_str(), DESC_SIZE);
+		strncpy(_frame.payload.desc, desc.c_str(), Msg::DESC_SIZE);
 	}
 
 	virtual std::string getDesc () const
 	{
-		return std::string(_frame.payload.desc, DESC_SIZE);
+		const char* desc = _frame.payload.desc;
+		return desc[Msg::DESC_SIZE - 1] ? std::string(desc, Msg::DESC_SIZE) : std::string(desc);
 	}
 
 	virtual const uint8_t* getData () const
@@ -75,12 +77,13 @@ public:
 
 	void setValue (const std::string& value)
 	{
-		strncpy(_frame.payload.val, value.c_str(), VAL_SIZE);
+		strncpy(_frame.payload.val, value.c_str(), StrValMsg::VAL_SIZE);
 	}
 
 	const std::string getValue () const
 	{
-		return std::string(_frame.payload.val, VAL_SIZE);
+		const char* val = _frame.payload.val;
+		return val[StrValMsg::VAL_SIZE - 1] ? std::string(val, StrValMsg::VAL_SIZE) : std::string(val);
 	}
 
 private:

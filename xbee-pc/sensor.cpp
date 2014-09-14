@@ -50,12 +50,13 @@ int main (int argc, char* argv[])
 
 		XBeeAddress64& addr = rx.getRemoteAddress64();
 
-		std::cerr << "Replying to " << msg.getNodeName() << " ("<< std::hex << addr.getMsb() << ':' << addr.getLsb() << ")..." << std::endl;
+		std::cerr << "Replying to " << msg.getNode() << " ("<< std::hex << addr.getMsb() << ':' << addr.getLsb() << ")..." << std::endl;
 
 		{
 			wsan::NumValMsg msg("PMSENSOR");
 			const double d = rndIntGen() / 100.0;
 			msg.setValue(d, 2);
+			msg.setUnit("C");
 			msg.setDesc("DBL DESC");
 			std::cerr << "\t" << msg.getDesc() << ": " << boost::format("%.2f") % d << std::endl;
 
@@ -79,11 +80,12 @@ int main (int argc, char* argv[])
 			const char* s = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor...";
 			msg.setValue(s);
 			msg.setDesc("STR DESC");
-			std::cerr << "\t" << msg.getDesc() << ": \"" << s << '"' << std::endl;
+			std::cerr << "\t" << msg.getDesc() << ": \"" << msg.getValue() << '"' << std::endl;
 
 			ZBTxRequest tx(addr, const_cast<uint8_t*>(msg.getData()), msg.getDataSize());
 			xbee.send(tx);
 		}
+
 	}
 
 	return 0;

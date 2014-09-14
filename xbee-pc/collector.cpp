@@ -97,7 +97,7 @@ int main (int argc, char* argv[])
 
 		for (msg_ptr_list_type::const_iterator it = vals.begin(), it_end = vals.end(); it != it_end; ++it)
 		{
-			std::cerr << (*it)->getNodeName() << ' ' << (*it)->getDesc() << ": ";
+			std::cerr << (*it)->getNode() << ' ' << (*it)->getDesc() << ": ";
 
 			switch ((*it)->getType())
 			{

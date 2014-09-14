@@ -12,6 +12,8 @@ class NumValMsg : public Msg
 public:
 	static const char TYPE = 'N';
 
+	static const size_t UNIT_SIZE = 	8;
+
 	typedef struct
 	{
 		uint8_t spec;
@@ -23,7 +25,8 @@ public:
 		uint8_t val6;
 		uint8_t val7;
 		uint8_t val8;
-		char desc[DESC_SIZE];
+		char unit[NumValMsg::UNIT_SIZE];
+		char desc[Msg::DESC_SIZE];
 	} __attribute__((packed)) Payload;
 
 	typedef struct
@@ -32,15 +35,15 @@ public:
 		Payload payload;
 	} __attribute__((packed)) Frame;
 
-	NumValMsg (const char* node_name)
-		: Msg(_frame.header, TYPE, node_name)
+	NumValMsg (const char* node, const char* sess = NULL, const char vnet = 0)
+		: Msg(_frame.header, NumValMsg::TYPE, node, sess, vnet)
 	{
 		memset(&_frame.payload, 0, sizeof _frame.payload);
 	}
 
 	NumValMsg (const uint8_t* data, const uint8_t data_size)
 	{
-		if (data_size != sizeof _frame || !isPreambleOk(data) || data[PREAMBLE_SIZE] != TYPE)
+		if (data_size != sizeof _frame || !isPreambleOk(data) || data[Msg::PREAMBLE_SIZE] != NumValMsg::TYPE)
 		{
 			memset(&_frame, 0, sizeof _frame);
 			return;
@@ -54,19 +57,21 @@ public:
 		return _frame.header.type;
 	}
 
-	virtual std::string getNodeName () const
+	virtual std::string getNode () const
 	{
-		return std::string(_frame.header.node_name, NODE_NAME_SIZE);
+		const char* node = _frame.header.node;
+		return node[Msg::NODE_SIZE - 1] ? std::string(node, Msg::NODE_SIZE) : std::string(node);
 	}
 
 	virtual void setDesc (const std::string& desc)
 	{
-		strncpy(_frame.payload.desc, desc.c_str(), DESC_SIZE);
+		strncpy(_frame.payload.desc, desc.c_str(), Msg::DESC_SIZE);
 	}
 
 	virtual std::string getDesc () const
 	{
-		return std::string(_frame.payload.desc, DESC_SIZE);
+		const char* desc = _frame.payload.desc;
+		return desc[Msg::DESC_SIZE - 1] ? std::string(desc, Msg::DESC_SIZE) : std::string(desc);
 	}
 
 	virtual const uint8_t* getData () const
@@ -137,6 +142,18 @@ public:
 			value *= -1;
 
 		return value;
+	}
+
+	void setUnit (const std::string& unit)
+	{
+		strncpy(_frame.payload.unit, unit.c_str(), NumValMsg::UNIT_SIZE);
+	}
+
+	std::string getUnit () const
+	{
+		const char* unit = _frame.payload.unit;
+
+		return unit[NumValMsg::UNIT_SIZE - 1] ? std::string(unit, NumValMsg::UNIT_SIZE) : std::string(unit);
 	}
 
 private:
